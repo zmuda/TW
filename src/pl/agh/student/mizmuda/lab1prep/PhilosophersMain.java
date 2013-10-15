@@ -1,10 +1,7 @@
-package pl.agh.student.mizmuda.lab1;
+package pl.agh.student.mizmuda.lab1prep;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class PhilosophersMain {
 

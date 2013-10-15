@@ -1,4 +1,4 @@
-package pl.agh.student.mizmuda.lab1;
+package pl.agh.student.mizmuda.lab1prep;
 
 public class Philosopher implements Runnable {
     private int id;

@@ -1,6 +1,4 @@
-package pl.agh.student.mizmuda.lab1;
-
-import java.util.concurrent.locks.ReentrantLock;
+package pl.agh.student.mizmuda.lab1prep;
 
 public class SyncSemaphore implements Semaphore {
     private volatile int value;

@@ -1,4 +1,4 @@
-package pl.agh.student.mizmuda.lab1;
+package pl.agh.student.mizmuda.lab1prep;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
