@@ -10,6 +10,9 @@ public class BinarySemaphore {
     }
 
     public synchronized void V() {
+        if (opened) {
+            throw new IllegalStateException();
+        }
         if (awaits > 0) {
             notify();
         } else {
