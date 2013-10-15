@@ -1,24 +1,32 @@
 package pl.agh.student.mizmuda.lab1;
 
 public class BinarySemaphore {
-    private volatile boolean value;
+    private volatile boolean opened;
+    private volatile int awaits;
 
-    public BinarySemaphore(boolean value) {
-        this.value = value;
+    public BinarySemaphore(boolean opened) {
+        this.opened = opened;
+        this.awaits = 0;
     }
 
     public synchronized void V() {
-        this.value = true;
-        if (value) {
+        if (awaits > 0) {
             notify();
+        } else {
+            this.opened = true;
         }
     }
 
     public synchronized void P() throws InterruptedException {
-        if (!value) {
-            wait();
+        if (!opened) {
+            awaits++;
+            try {
+                wait();
+            } finally {
+                awaits--;
+            }
         }
-        this.value = false;
+        this.opened = false;
     }
 
 }
