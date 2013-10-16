@@ -13,25 +13,21 @@ public class BinarySemaphore {
         if (opened) {
             throw new IllegalStateException();
         }
-        if (awaits > 0) {
-            notify();
-        } else {
-            this.opened = true;
-        }
+        this.opened = true;
+        notify();
+
     }
 
-    public synchronized void P(){
-        if (!opened) {
-            awaits++;
+    public synchronized void P() {
+        while (!opened) {
             try {
                 wait();
             } catch (InterruptedException e) {
                 //om nom nom - exception eaten
-            } finally {
-                awaits--;
             }
         }
         this.opened = false;
+
     }
 
 }
