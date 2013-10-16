@@ -1,28 +1,70 @@
 package pl.agh.student.mizmuda.lab1;
 
-public class S implements Runnable{
+import java.util.ArrayList;
 
-    private final BinarySemaphore fullB2;
-    private final Semaphore emptyPlacesInB2;
-    private final Semaphore availablePairsInB1;
-    private final Semaphore emptyPairsInB1;
-    private final int bufferSize;
+public class S implements Runnable {
+    private final int packageSize = 2;
 
-    public S(BinarySemaphore fullB2, Semaphore emptyPlacesInB2, Semaphore availablePairsInB1, Semaphore emptyPairsInB1, int bufferSize) {
-        this.fullB2 = fullB2;
-        this.emptyPlacesInB2 = emptyPlacesInB2;
-        this.availablePairsInB1 = availablePairsInB1;
-        this.emptyPairsInB1 = emptyPairsInB1;
-        this.bufferSize = bufferSize;
+    private final Semaphore availableInProduction;
+    private final Semaphore spaceInProduction;
+    private final Semaphore availableInRelease;
+    private final Semaphore spaceInRelease;
+    private Integer releaseInsertIndex;
+    private Integer productionDeleteIndex;
+    @NotNeededIfSingleInstanceOf(entity = "S")
+    private final BinarySemaphore insertingToRelease;
+    @NotNeededIfSingleInstanceOf(entity = "S")
+    private final BinarySemaphore deletingFromProduction;
+    private final ArrayList<Product> production;
+    private final ArrayList<Product> release;
+
+    public S(Semaphore availableInProduction, Semaphore spaceInProduction, Semaphore availableInRelease,
+             Semaphore spaceInRelease, Integer releaseInsertIndex, Integer productionDeleteIndex,
+             BinarySemaphore insertingToRelease, BinarySemaphore deletingFromProduction, ArrayList<Product> production,
+             ArrayList<Product> release) {
+        this.availableInProduction = availableInProduction;
+        this.spaceInProduction = spaceInProduction;
+        this.availableInRelease = availableInRelease;
+        this.spaceInRelease = spaceInRelease;
+        this.releaseInsertIndex = releaseInsertIndex;
+        this.productionDeleteIndex = productionDeleteIndex;
+        this.insertingToRelease = insertingToRelease;
+        this.deletingFromProduction = deletingFromProduction;
+        this.production = production;
+        this.release = release;
     }
 
     @Override
     public void run() {
-        emptyPlacesInB2.P();
-        availablePairsInB1.P();
-        //rob swoje
-        if(/*pelne*/){
-            fullB2.V();
+        while (true) {
+            for (int i = 0; i < packageSize; i++) {
+                availableInProduction.P();
+            }
+            System.out.println("S reserved "+packageSize+" products");
+            for (int i = 0; i < packageSize; i++) {
+                spaceInRelease.P();
+            }
+            System.out.println("S reserved "+packageSize+" places");
+            deletingFromProduction.P();
+            insertingToRelease.P();
+            for (int i = 0; i < packageSize; i++) {
+                release.set(releaseInsertIndex, production.get(productionDeleteIndex));
+                production.set(productionDeleteIndex, null);
+                releaseInsertIndex++;
+                releaseInsertIndex %= release.size();
+                productionDeleteIndex++;
+                productionDeleteIndex %= production.size();
+            }
+            insertingToRelease.V();
+            deletingFromProduction.V();
+            for (int i = 0; i < packageSize; i++) {
+                availableInRelease.V();
+            }
+            System.out.println("S moved "+packageSize+" products");
+            for (int i = 0; i < packageSize; i++) {
+                spaceInProduction.V();
+            }
+            System.out.println("S released space for "+packageSize+" products");
         }
     }
 }

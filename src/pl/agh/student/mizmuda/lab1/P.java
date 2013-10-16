@@ -1,31 +1,40 @@
 package pl.agh.student.mizmuda.lab1;
 
-public class P implements Runnable{
+import java.util.ArrayList;
 
-    private final BinarySemaphore accessInsertingB1;
-    private final Semaphore availablePairsInB1;
-    private final Semaphore emptyPairsInB1;
-    private final int bufferSize;
-    private int positionInB1;
+public class P implements Runnable {
 
-    public P(BinarySemaphore accessInsertingB1, Semaphore availablePairsInB1, Semaphore emptyPairsInB1, int bufferSize, int positionInB1) {
-        this.accessInsertingB1 = accessInsertingB1;
-        this.availablePairsInB1 = availablePairsInB1;
-        this.emptyPairsInB1 = emptyPairsInB1;
-        this.bufferSize = bufferSize;
-        this.positionInB1 = positionInB1;
+    private final BinarySemaphore insertingToProduction;
+    private final Semaphore availableInProduction;
+    private final Semaphore spaceInProduction;
+    private Integer productionInsertIndex;
+    private final ArrayList<Product> production;
+    private final String id;
+
+    public P(BinarySemaphore insertingToProduction, Semaphore availableInProduction, Semaphore spaceInProduction,
+             Integer productionInsertIndex, ArrayList<Product> production, String id) {
+        this.insertingToProduction = insertingToProduction;
+        this.availableInProduction = availableInProduction;
+        this.spaceInProduction = spaceInProduction;
+        this.productionInsertIndex = productionInsertIndex;
+        this.production = production;
+        this.id = id;
     }
 
     @Override
     public void run() {
-        //produkuj
-        accessInsertingB1.P();
-        //dodaj
-        if(/*parzyscie*/){
-            availablePairsInB1.V();
-            emptyPairsInB1.P();
+        while (true) {
+            Product product = Product.newInstance();
+            System.out.println(id + " has ready product");
+            spaceInProduction.P();
+            System.out.println(id + " reserved space for product");
+            insertingToProduction.P();
+            production.set(productionInsertIndex, product);
+            productionInsertIndex++;
+            productionInsertIndex %= production.size();
+            System.out.println(id + " passed product");
+            insertingToProduction.V();
+            availableInProduction.V();
         }
-
-        accessInsertingB1.V();
     }
 }

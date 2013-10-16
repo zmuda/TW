@@ -16,11 +16,13 @@ public class Semaphore {
         }
     }
 
-    public synchronized void P() throws InterruptedException {
-        if (value == 0) {
+    public synchronized void P(){
+        while (value == 0) {
             awaits++;
             try {
                 wait();
+            } catch (InterruptedException e) {
+                //om nom nom - exception eaten
             } finally {
                 awaits--;
             }

@@ -20,11 +20,13 @@ public class BinarySemaphore {
         }
     }
 
-    public synchronized void P() throws InterruptedException {
-        if (!opened) {
+    public synchronized void P(){
+        while (!opened) {
             awaits++;
             try {
                 wait();
+            } catch (InterruptedException e) {
+                //om nom nom - exception eaten
             } finally {
                 awaits--;
             }
