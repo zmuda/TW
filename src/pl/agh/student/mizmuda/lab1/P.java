@@ -7,12 +7,12 @@ public class P implements Runnable {
     private final BinarySemaphore insertingToProduction;
     private final Semaphore availableInProduction;
     private final Semaphore spaceInProduction;
-    private Integer productionInsertIndex;
+    private MutableInteger productionInsertIndex;
     private final Product[] production;
     private final String id;
 
     public P(BinarySemaphore insertingToProduction, Semaphore availableInProduction, Semaphore spaceInProduction,
-             Integer productionInsertIndex, Product[] production, String id) {
+             MutableInteger productionInsertIndex, Product[] production, String id) {
         this.insertingToProduction = insertingToProduction;
         this.availableInProduction = availableInProduction;
         this.spaceInProduction = spaceInProduction;
@@ -29,9 +29,8 @@ public class P implements Runnable {
             spaceInProduction.P();
             System.out.println(id + " reserved space for product");
             insertingToProduction.P();
-            production[productionInsertIndex] = product;
-            productionInsertIndex++;
-            productionInsertIndex %= production.length;
+            production[productionInsertIndex.value] = product;
+            productionInsertIndex.incrementModulo(production.length);
             System.out.println(id + " passed product");
             insertingToProduction.V();
             availableInProduction.V();

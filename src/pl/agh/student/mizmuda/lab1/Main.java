@@ -13,10 +13,10 @@ public class Main {
     private static final Semaphore spaceInProduction = new Semaphore(productionSize);
     private static final Semaphore availableInRelease = new Semaphore(0);
     private static final Semaphore spaceInRelease = new Semaphore(releaseSize);
-    private static Integer releaseInsertIndex = 0;
-    private static Integer productionDeleteIndex = 0;
-    private static Integer releaseDeleteIndex = 0;
-    private static Integer productionInsertIndex = 0;
+    private static MutableInteger releaseInsertIndex = new MutableInteger();
+    private static MutableInteger productionDeleteIndex = new MutableInteger();
+    private static MutableInteger releaseDeleteIndex = new MutableInteger();
+    private static MutableInteger productionInsertIndex = new MutableInteger();
     private static final Product[] production = new Product[productionSize];
     private static final Product[] release = new Product[releaseSize];
 

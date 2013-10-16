@@ -9,8 +9,8 @@ public class S implements Runnable {
     private final Semaphore spaceInProduction;
     private final Semaphore availableInRelease;
     private final Semaphore spaceInRelease;
-    private Integer releaseInsertIndex;
-    private Integer productionDeleteIndex;
+    private MutableInteger releaseInsertIndex;
+    private MutableInteger productionDeleteIndex;
     @NotNeededIfSingleInstanceOf(entity = "S")
     private final BinarySemaphore insertingToRelease;
     @NotNeededIfSingleInstanceOf(entity = "S")
@@ -19,7 +19,7 @@ public class S implements Runnable {
     private final Product[] release;
 
     public S(Semaphore availableInProduction, Semaphore spaceInProduction, Semaphore availableInRelease,
-             Semaphore spaceInRelease, Integer releaseInsertIndex, Integer productionDeleteIndex,
+             Semaphore spaceInRelease, MutableInteger releaseInsertIndex, MutableInteger productionDeleteIndex,
              BinarySemaphore insertingToRelease, BinarySemaphore deletingFromProduction, Product[] production,
              Product[] release) {
         this.availableInProduction = availableInProduction;
@@ -48,12 +48,10 @@ public class S implements Runnable {
             deletingFromProduction.P();
             insertingToRelease.P();
             for (int i = 0; i < packageSize; i++) {
-                release[releaseInsertIndex] = production[productionDeleteIndex];
-                production[productionDeleteIndex] = null;
-                releaseInsertIndex++;
-                releaseInsertIndex %= release.length;
-                productionDeleteIndex++;
-                productionDeleteIndex %= production.length;
+                release[releaseInsertIndex.value] = production[productionDeleteIndex.value];
+                production[productionDeleteIndex.value] = null;
+                releaseInsertIndex.incrementModulo(release.length);
+                productionDeleteIndex.incrementModulo(production.length);
             }
             insertingToRelease.V();
             deletingFromProduction.V();
