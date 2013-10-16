@@ -17,8 +17,8 @@ public class Main {
     private static Integer productionDeleteIndex = 0;
     private static Integer releaseDeleteIndex = 0;
     private static Integer productionInsertIndex = 0;
-    private static final ArrayList<Product> production = new ArrayList<Product>(productionSize);
-    private static final ArrayList<Product> release = new ArrayList<Product>(releaseSize);
+    private static final Product[] production = new Product[productionSize];
+    private static final Product[] release = new Product[releaseSize];
 
     @NotNeededIfSingleInstanceOf(entity = "K")
     private static final BinarySemaphore deletingFromRelease = new BinarySemaphore(true);
@@ -30,12 +30,6 @@ public class Main {
 
 
     public static void main(String[] args) {
-        for(int i=0;i<releaseSize;i++){
-            release.add(null);
-        }
-        for(int i=0;i<productionSize;i++){
-            production.add(null);
-        }
         ExecutorService service = Executors.newFixedThreadPool(countOfP+1+1);
         service.submit(new K(releaseDeleteIndex,availableInRelease,spaceInRelease,deletingFromRelease,release));
         service.submit(new S(availableInProduction,spaceInProduction,availableInRelease,spaceInRelease,

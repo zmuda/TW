@@ -15,13 +15,13 @@ public class S implements Runnable {
     private final BinarySemaphore insertingToRelease;
     @NotNeededIfSingleInstanceOf(entity = "S")
     private final BinarySemaphore deletingFromProduction;
-    private final ArrayList<Product> production;
-    private final ArrayList<Product> release;
+    private final Product[] production;
+    private final Product[] release;
 
     public S(Semaphore availableInProduction, Semaphore spaceInProduction, Semaphore availableInRelease,
              Semaphore spaceInRelease, Integer releaseInsertIndex, Integer productionDeleteIndex,
-             BinarySemaphore insertingToRelease, BinarySemaphore deletingFromProduction, ArrayList<Product> production,
-             ArrayList<Product> release) {
+             BinarySemaphore insertingToRelease, BinarySemaphore deletingFromProduction, Product[] production,
+             Product[] release) {
         this.availableInProduction = availableInProduction;
         this.spaceInProduction = spaceInProduction;
         this.availableInRelease = availableInRelease;
@@ -40,31 +40,31 @@ public class S implements Runnable {
             for (int i = 0; i < packageSize; i++) {
                 availableInProduction.P();
             }
-            System.out.println("S reserved "+packageSize+" products");
+            System.out.println("S reserved " + packageSize + " products");
             for (int i = 0; i < packageSize; i++) {
                 spaceInRelease.P();
             }
-            System.out.println("S reserved "+packageSize+" places");
+            System.out.println("S reserved " + packageSize + " places");
             deletingFromProduction.P();
             insertingToRelease.P();
             for (int i = 0; i < packageSize; i++) {
-                release.set(releaseInsertIndex, production.get(productionDeleteIndex));
-                production.set(productionDeleteIndex, null);
+                release[releaseInsertIndex] = production[productionDeleteIndex];
+                production[productionDeleteIndex] = null;
                 releaseInsertIndex++;
-                releaseInsertIndex %= release.size();
+                releaseInsertIndex %= release.length;
                 productionDeleteIndex++;
-                productionDeleteIndex %= production.size();
+                productionDeleteIndex %= production.length;
             }
             insertingToRelease.V();
             deletingFromProduction.V();
             for (int i = 0; i < packageSize; i++) {
                 availableInRelease.V();
             }
-            System.out.println("S moved "+packageSize+" products");
+            System.out.println("S moved " + packageSize + " products");
             for (int i = 0; i < packageSize; i++) {
                 spaceInProduction.V();
             }
-            System.out.println("S released space for "+packageSize+" products");
+            System.out.println("S released space for " + packageSize + " products");
         }
     }
 }
