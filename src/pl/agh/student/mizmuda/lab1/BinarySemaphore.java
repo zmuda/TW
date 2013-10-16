@@ -21,7 +21,7 @@ public class BinarySemaphore {
     }
 
     public synchronized void P(){
-        while (!opened) {
+        if (!opened) {
             awaits++;
             try {
                 wait();

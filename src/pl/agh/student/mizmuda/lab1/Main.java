@@ -45,5 +45,11 @@ public class Main {
             service.submit(new P(insertingToProduction,availableInProduction,spaceInProduction,productionInsertIndex,
                     production,"P"+String.valueOf(i)));
         }
+        while(true){
+            try {
+                //this is breakpoint placeholder
+                Thread.sleep(200);
+            } catch (InterruptedException e) {}
+        }
     }
 }

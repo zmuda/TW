@@ -17,7 +17,7 @@ public class Semaphore {
     }
 
     public synchronized void P(){
-        while (value == 0) {
+        if (value == 0) {
             awaits++;
             try {
                 wait();

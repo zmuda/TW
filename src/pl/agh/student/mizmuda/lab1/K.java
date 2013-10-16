@@ -20,26 +20,28 @@ public class K implements Runnable {
         this.deletingFromRelease = deletingFromRelease;
         this.release = release;
 
-        this.packageSize=release.size();
+        this.packageSize = release.size();
     }
 
     @Override
     public void run() {
-        for(int i=0;i<packageSize;i++){
-            availableInRelease.P();
+        while (true) {
+            for (int i = 0; i < packageSize; i++) {
+                availableInRelease.P();
+            }
+            System.out.println("K reserved " + packageSize + " products");
+            deletingFromRelease.P();
+            for (int i = 0; i < packageSize; i++) {
+                release.set(releaseDeleteIndex, null);
+                releaseDeleteIndex++;
+                releaseDeleteIndex %= release.size();
+            }
+            deletingFromRelease.V();
+            System.out.println("K consumed " + packageSize + " products");
+            for (int i = 0; i < packageSize; i++) {
+                spaceInRelease.V();
+            }
+            System.out.println("K released space for " + packageSize + " products");
         }
-        System.out.println("K reserved "+packageSize+" products");
-        deletingFromRelease.P();
-        for(int i=0;i<packageSize;i++){
-            release.set(releaseDeleteIndex,null);
-            releaseDeleteIndex++;
-            releaseDeleteIndex%=release.size();
-        }
-        deletingFromRelease.V();
-        System.out.println("K consumed "+packageSize+" products");
-        for(int i=0;i<packageSize;i++){
-            spaceInRelease.V();
-        }
-        System.out.println("K released space for "+packageSize+" products");
     }
 }
