@@ -6,18 +6,14 @@ public class K implements Runnable {
     private final Semaphore availableInRelease;
     private final Semaphore spaceInRelease;
     private MutableInteger releaseDeleteIndex;
-    @NotNeededIfSingleInstanceOf(entity = "K")
-    private final BinarySemaphore deletingFromRelease;
     private final Product[] release;
 
     public K(MutableInteger releaseDeleteIndex, Semaphore availableInRelease, Semaphore spaceInRelease,
-             BinarySemaphore deletingFromRelease, Product[] release) {
+             Product[] release) {
         this.releaseDeleteIndex = releaseDeleteIndex;
         this.availableInRelease = availableInRelease;
         this.spaceInRelease = spaceInRelease;
-        this.deletingFromRelease = deletingFromRelease;
         this.release = release;
-
         this.packageSize = release.length;
     }
 
@@ -28,13 +24,13 @@ public class K implements Runnable {
                 availableInRelease.P();
             }
             System.out.println("K reserved " + packageSize + " products");
-            deletingFromRelease.P();
+            System.out.println("\t" + Main.buffersOccupationString(release));
             for (int i = 0; i < packageSize; i++) {
                 Product.destroyInstance(release[releaseDeleteIndex.value]);
                 release[releaseDeleteIndex.value] = null;
                 releaseDeleteIndex.incrementModulo(release.length);
             }
-            deletingFromRelease.V();
+            System.out.println("\t" + Main.buffersOccupationString(release));
             System.out.println("K consumed " + packageSize + " products");
             for (int i = 0; i < packageSize; i++) {
                 spaceInRelease.V();

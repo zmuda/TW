@@ -1,7 +1,5 @@
 package pl.agh.student.mizmuda.lab1;
 
-import java.util.ArrayList;
-
 public class P implements Runnable {
 
     private final BinarySemaphore insertingToProduction;
@@ -28,9 +26,11 @@ public class P implements Runnable {
             System.out.println(id + " has ready product");
             spaceInProduction.P();
             System.out.println(id + " reserved space for product");
+            System.out.println(Main.buffersOccupationString(production));
             insertingToProduction.P();
             production[productionInsertIndex.value] = product;
             productionInsertIndex.incrementModulo(production.length);
+            System.out.println(Main.buffersOccupationString(production));
             System.out.println(id + " passed product");
             insertingToProduction.V();
             availableInProduction.V();
