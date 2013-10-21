@@ -1,6 +1,9 @@
 package pl.agh.student.mizmuda.lab1;
 
+import java.util.logging.Logger;
+
 public class S implements Runnable {
+    private Logger logger = Logger.getLogger("lab1");
     private final int packageSize = 2;
 
     private final Semaphore availableInProduction;
@@ -31,12 +34,12 @@ public class S implements Runnable {
             for (int i = 0; i < packageSize; i++) {
                 availableInProduction.P();
             }
-            System.out.println("S reserved " + packageSize + " products");
+            logger.info("S reserved " + packageSize + " products");
             for (int i = 0; i < packageSize; i++) {
                 spaceInRelease.P();
             }
-            System.out.println("S reserved " + packageSize + " places");
-            System.out.println(Main.buffersOccupationString(production) + "\t" + Main.buffersOccupationString(release));
+            logger.info("S reserved " + packageSize + " places");
+            logger.info(Main.buffersOccupationString(production) + "\t" + Main.buffersOccupationString(release));
             for (int i = 0; i < packageSize; i++) {
                 release[releaseInsertIndex.value] = production[productionDeleteIndex.value];
                 production[productionDeleteIndex.value] = null;
@@ -46,12 +49,12 @@ public class S implements Runnable {
             for (int i = 0; i < packageSize; i++) {
                 availableInRelease.V();
             }
-            System.out.println("S moved " + packageSize + " products");
-            System.out.println(Main.buffersOccupationString(production) + "\t" + Main.buffersOccupationString(release));
+            logger.info("S moved " + packageSize + " products");
+            logger.info(Main.buffersOccupationString(production) + "\t" + Main.buffersOccupationString(release));
             for (int i = 0; i < packageSize; i++) {
                 spaceInProduction.V();
             }
-            System.out.println("S released space for " + packageSize + " products");
+            logger.info("S released space for " + packageSize + " products");
         }
     }
 }

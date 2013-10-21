@@ -1,6 +1,9 @@
 package pl.agh.student.mizmuda.lab1;
 
+import java.util.logging.Logger;
+
 public class P implements Runnable {
+    private Logger logger = Logger.getLogger("lab1");
 
     private final BinarySemaphore insertingToProduction;
     private final Semaphore availableInProduction;
@@ -23,15 +26,15 @@ public class P implements Runnable {
     public void run() {
         while (true) {
             Product product = Product.newInstance();
-            System.out.println(id + " has ready product");
+            logger.info(id + " has ready product");
             spaceInProduction.P();
-            System.out.println(id + " reserved space for product");
-            System.out.println(Main.buffersOccupationString(production));
+            logger.info(id + " reserved space for product");
+            logger.info(Main.buffersOccupationString(production));
             insertingToProduction.P();
             production[productionInsertIndex.value] = product;
             productionInsertIndex.incrementModulo(production.length);
-            System.out.println(Main.buffersOccupationString(production));
-            System.out.println(id + " passed product");
+            logger.info(Main.buffersOccupationString(production));
+            logger.info(id + " passed product");
             insertingToProduction.V();
             availableInProduction.V();
         }
