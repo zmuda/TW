@@ -1,4 +1,4 @@
-package pl.agh.student.mizmuda.lab2.asynchronous;
+package pl.agh.student.mizmuda.lab2.asynchronous.v1;
 
 import java.util.Random;
 
@@ -14,10 +14,10 @@ public class Consumer implements Runnable {
     public void run() {
         while (true) {
             try {
-                Thread.sleep(random.nextInt(1000));
+                Thread.sleep(random.nextInt(100) + 1);
             } catch (InterruptedException e) {
             }
-            buffer.popElement();
+            buffer.poolElement();
         }
     }
 }

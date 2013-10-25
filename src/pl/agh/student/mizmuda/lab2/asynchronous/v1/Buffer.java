@@ -1,4 +1,4 @@
-package pl.agh.student.mizmuda.lab2.asynchronous;
+package pl.agh.student.mizmuda.lab2.asynchronous.v1;
 
 import org.apache.log4j.Logger;
 
@@ -13,7 +13,6 @@ public class Buffer<T> {
     private Logger logger;
     ReentrantLock lock = new ReentrantLock();
     private Condition notEmpty = lock.newCondition();
-    private Condition notFull = lock.newCondition();
     private ArrayList<T> data;
     private BufferState[] dataStates;
 
@@ -25,12 +24,32 @@ public class Buffer<T> {
         dataStates = new BufferState[limit];
         for (int i = 0; i < limit; i++) {
             dataStates[i] = BufferState.EMPTY;
+            data.add(null);
         }
+    }
+
+    public void pushElement(T element) {
+        lock.lock();
+        Integer index = getIndexForAdd();
+        lock.unlock();
+        if (index != null) {
+            add(index, element);
+            finalizeAdd(index);
+        }
+    }
+
+    public T poolElement() {
+        lock.lock();
+        Integer index = getIndexForGet();
+        lock.unlock();
+        T ret = get(index);
+        finalizeGet(index);
+        return ret;
     }
 
     private T get(int index) {
         try {
-            Thread.sleep(random.nextInt(100));
+            Thread.sleep(random.nextInt(100) + 1);
         } catch (InterruptedException e) {
         }
         return data.get(index);
@@ -38,7 +57,7 @@ public class Buffer<T> {
 
     private void add(int index, T element) {
         try {
-            Thread.sleep(random.nextInt(100));
+            Thread.sleep(random.nextInt(100) + 1);
         } catch (InterruptedException e) {
         }
         data.set(index, element);
@@ -64,18 +83,12 @@ public class Buffer<T> {
     }
 
     private Integer getIndexForAdd() {
-        lock.lock();
         Integer address = fetchIndexOfEmpty();
-        while (address == null) {
-            try {
-                notFull.await();
-            } catch (InterruptedException e) {
-            } finally {
-                address = fetchIndexOfEmpty();
-            }
+        if (address == null) {
+            logger.info("skipping addition");
+        } else {
+            logger.info("reserved space\t\t" + getString());
         }
-        logger.info("reserved space\t\t" + getString());
-        lock.unlock();
         return address;
     }
 
@@ -91,7 +104,6 @@ public class Buffer<T> {
     }
 
     private Integer getIndexForGet() {
-        lock.lock();
         Integer address = fetchIndexOfFull();
         while (address == null) {
             try {
@@ -112,7 +124,6 @@ public class Buffer<T> {
         }
         dataStates[address] = BufferState.EMPTY;
         logger.info("get finished:\t\t" + getString());
-        notFull.signal();
         lock.unlock();
     }
 
