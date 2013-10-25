@@ -1,4 +1,4 @@
-package pl.agh.student.mizmuda.lab2.zad3;
+package pl.agh.student.mizmuda.lab2.zad4;
 
 import java.util.LinkedList;
 import java.util.concurrent.locks.Condition;
