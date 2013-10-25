@@ -1,13 +1,14 @@
 package pl.agh.student.mizmuda.lab2.zad4;
 
+import org.apache.log4j.Logger;
+
 import java.util.LinkedList;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
 
 public class Buffer {
     private final int limit;
-    private Logger logger = Logger.getLogger("lab2.zad3");
+    private Logger logger = Logger.getLogger("lab2.zad4");
     private ReentrantLock lock = new ReentrantLock();
     private Condition notEmpty = lock.newCondition();
     private Condition notFull = lock.newCondition();

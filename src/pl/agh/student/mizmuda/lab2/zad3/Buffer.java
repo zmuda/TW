@@ -1,9 +1,10 @@
 package pl.agh.student.mizmuda.lab2.zad3;
 
+import org.apache.log4j.Logger;
+
 import java.util.LinkedList;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
 
 public class Buffer {
     private final int limit;

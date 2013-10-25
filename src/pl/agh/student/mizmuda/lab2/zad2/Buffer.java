@@ -1,7 +1,8 @@
 package pl.agh.student.mizmuda.lab2.zad2;
 
+import org.apache.log4j.Logger;
+
 import java.util.LinkedList;
-import java.util.logging.Logger;
 
 public class Buffer {
     private int limit = 4;
