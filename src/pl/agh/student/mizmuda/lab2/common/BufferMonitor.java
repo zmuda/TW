@@ -1,13 +1,18 @@
-package pl.agh.student.mizmuda.lab2.zad2;
+package pl.agh.student.mizmuda.lab2.common;
 
 import org.apache.log4j.Logger;
 
 import java.util.LinkedList;
 
-public class Buffer {
-    private int limit = 4;
-    private Logger logger = Logger.getLogger("lab2.zad2");
+public class BufferMonitor implements Buffer {
+    private final int limit;
+    private Logger logger;
     private LinkedList<Integer> data = new LinkedList<Integer>();
+
+    public BufferMonitor(int limit, String loggerRef) {
+        this.limit = limit;
+        logger = Logger.getLogger(loggerRef);
+    }
 
     public synchronized void pushElement(Integer element) {
         while (data.size() == limit) {
@@ -29,8 +34,9 @@ public class Buffer {
             }
         }
         notify();
+        Integer tmp = data.poll();
         logger.info("\treturned element " + getString());
-        return data.poll();
+        return tmp;
     }
 
     public String getString() {
