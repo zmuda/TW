@@ -2,7 +2,12 @@ package pl.agh.student.mizmuda.lab2.asynchronous.v2;
 
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -16,7 +21,8 @@ public class Buffer<T> {
     private ArrayList<T> data;
     private BufferState[] dataStates;
     private Queue<Integer> indicesOfProduced;
-    private Map<Runnable, Condition> conditions = new HashMap<Runnable, Condition>();
+    private ConcurrentMap<Runnable, Condition> runnableConditions = new ConcurrentHashMap<Runnable, Condition>();
+    private ConcurrentMap<Integer, Condition> indicesConditions = new ConcurrentHashMap<Integer, Condition>();
 
 
     public Buffer(int limit, String loggerRef) {
@@ -39,9 +45,12 @@ public class Buffer<T> {
         finalizeAdd(index);
     }
 
-    public T poolElement() {
+    public T poolElement(Runnable requester) {
+        if (!runnableConditions.containsKey(requester)) {
+            runnableConditions.put(requester, lock.newCondition());
+        }
         lock.lock();
-        Integer index = getIndexForGet();
+        Integer index = getIndexForGet(runnableConditions.get(requester));
         lock.unlock();
         T ret = get(index);
         finalizeGet(index);
@@ -68,6 +77,8 @@ public class Buffer<T> {
         for (int i = 0; i < limit; i++) {
             if (dataStates[i] == BufferState.EMPTY) {
                 dataStates[i] = BufferState.RESERVED_ADDITION;
+                indicesOfProduced.add(i);
+                notEmpty.signal();
                 return i;
             }
         }
@@ -75,13 +86,8 @@ public class Buffer<T> {
     }
 
     private Integer fetchIndexOfFull() {
-        for (int i = 0; i < limit; i++) {
-            if (dataStates[i] == BufferState.OCCUPIED) {
-                dataStates[i] = BufferState.RESERVED_DELETION;
-                return i;
-            }
-        }
-        return null;
+        Integer address = indicesOfProduced.poll();
+        return address;
     }
 
     private Integer getIndexForAdd() {
@@ -104,11 +110,13 @@ public class Buffer<T> {
         }
         dataStates[index] = BufferState.OCCUPIED;
         logger.info("add finished:\t\t" + getString());
-        notEmpty.signal();
+        if (indicesConditions.containsKey(index)) {
+            indicesConditions.get(index).signal();
+        }
         lock.unlock();
     }
 
-    private Integer getIndexForGet() {
+    private Integer getIndexForGet(Condition requesterCondition) {
         Integer address = fetchIndexOfFull();
         while (address == null) {
             try {
@@ -118,7 +126,19 @@ public class Buffer<T> {
                 address = fetchIndexOfFull();
             }
         }
-        logger.info("\treturned for get: " + address);
+        logger.info("\tassigned for get " + getString());
+        while (dataStates[address] != BufferState.OCCUPIED) {
+            indicesConditions.put(address, requesterCondition);
+            try {
+                requesterCondition.await();
+            } catch (InterruptedException e) {
+            }
+        }
+        dataStates[address] = BufferState.RESERVED_DELETION;
+        if (indicesConditions.containsKey(address)) {
+            indicesConditions.remove(address);
+        }
+        logger.info("\treturned for get " + getString());
         return address;
     }
 
