@@ -2,6 +2,7 @@ package pl.agh.student.mizmuda.lab2.multimonitor;
 
 import org.apache.log4j.BasicConfigurator;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,7 +10,9 @@ import java.util.concurrent.Executors;
 public class Main {
     public static void main(String[] args) {
         BasicConfigurator.configure();
-        final DuplexMonitor lock = new DuplexMonitor();
+        int limitA = 3;
+        int limitB = 2;
+        final DuplexMonitor lock = new DuplexMonitor(limitA, limitB);
         final Random random = new Random();
         int lockingA = 3;
         int lockingB = 3;
@@ -20,12 +23,12 @@ public class Main {
                 @Override
                 public void run() {
                     while (true) {
-                        lock.lockA();
+                        Integer a = lock.lockA();
                         try {
                             Thread.sleep(random.nextInt(200) + 11);
                         } catch (InterruptedException e) {
                         }
-                        lock.unlockA();
+                        lock.unlockA(a);
                     }
                 }
             });
@@ -35,12 +38,12 @@ public class Main {
                 @Override
                 public void run() {
                     while (true) {
-                        lock.lockB();
+                        Integer b = lock.lockB();
                         try {
                             Thread.sleep(random.nextInt(200) + 11);
                         } catch (InterruptedException e) {
                         }
-                        lock.unlockB();
+                        lock.unlockB(b);
                     }
                 }
             });
@@ -50,17 +53,17 @@ public class Main {
                 @Override
                 public void run() {
                     while (true) {
-                        lock.lockAnB();
+                        ArrayList<Integer> anb = lock.lockAnB();
                         try {
                             Thread.sleep(random.nextInt(100) + 11);
                         } catch (InterruptedException e) {
                         }
-                        lock.unlockPartA();
+                        lock.unlockPartA(anb.get(0));
                         try {
                             Thread.sleep(random.nextInt(100) + 11);
                         } catch (InterruptedException e) {
                         }
-                        lock.unlockPartB();
+                        lock.unlockPartB(anb.get(1));
                     }
                 }
             });

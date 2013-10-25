@@ -2,6 +2,8 @@ package pl.agh.student.mizmuda.lab2.multimonitor;
 
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -11,16 +13,29 @@ public class DuplexMonitor {
     private int waitingForA = 0;
     private int waitingForB = 0;
     private int waitingForAnB = 0;
-    private boolean lockedA = false;
-    private boolean lockedB = false;
     private Condition justA = lock.newCondition();
     private Condition justB = lock.newCondition();
     private Condition partA = lock.newCondition();
     private Condition partB = lock.newCondition();
+    private final int limitA;
+    private final int limitB;
+    private ConcurrentLinkedQueue<Integer> dataA = new ConcurrentLinkedQueue<Integer>();
+    private ConcurrentLinkedQueue<Integer> dataB = new ConcurrentLinkedQueue<Integer>();
 
-    public void lockA() {
+    public DuplexMonitor(int limitA, int limitB) {
+        this.limitA = limitA;
+        this.limitB = limitB;
+        for (int i = 0; i < limitA; i++) {
+            dataA.add(-i);
+        }
+        for (int i = 0; i < limitB; i++) {
+            dataB.add(i);
+        }
+    }
+
+    public Integer lockA() {
         lock.lock();
-        while (lockedA) {
+        while (dataA.size() == 0) {
             waitingForA++;
             try {
                 justA.await();
@@ -29,14 +44,15 @@ public class DuplexMonitor {
                 waitingForA--;
             }
         }
-        lockedA = true;
         logger.info("locked A");
+        Integer t = dataA.poll();
         lock.unlock();
+        return t;
     }
 
-    public void lockB() {
+    public Integer lockB() {
         lock.lock();
-        while (lockedB) {
+        while (dataB.size() == 0) {
             waitingForB++;
             try {
                 justB.await();
@@ -45,42 +61,47 @@ public class DuplexMonitor {
                 waitingForB--;
             }
         }
-        lockedB = true;
         logger.info("locked B");
+        Integer poll = dataB.poll();
         lock.unlock();
+        return poll;
     }
 
-    public void lockAnB() {
+    public ArrayList<Integer> lockAnB() {
         lock.lock();
-        boolean reservedA = false;
-        boolean reservedB = false;
-        while ((lockedA && !reservedA) || (lockedB && !reservedB)) {
+        Integer reservedA = null;
+        Integer reservedB = null;
+        while (((dataA.size() == 0) && reservedA == null) || ((dataB.size() == 0) && reservedB == null)) {
             waitingForAnB++;
             try {
-                if (lockedA && !reservedA) {
+                if ((dataA.size() == 0) && reservedA == null) {
                     partA.await();
-                    lockedA = true;
-                    reservedA = true;
+                    reservedA = dataA.poll();
                 }
-                if (lockedB && !reservedB) {
+                if ((dataB.size() == 0) && reservedB == null) {
                     partB.await();
-                    lockedB = true;
-                    reservedB = true;
+                    reservedB = dataB.poll();
                 }
             } catch (InterruptedException e) {
             } finally {
                 waitingForAnB--;
             }
         }
-        lockedA = true;
-        lockedB = true;
+        if (reservedA == null) {
+            reservedA = dataA.poll();
+            reservedB = dataB.poll();
+        }
+        ArrayList<Integer> ret = new ArrayList<Integer>();
+        ret.add(reservedA);
+        ret.add(reservedB);
         logger.info("locked A and B");
         lock.unlock();
+        return ret;
     }
 
-    public void unlockA() {
+    public void unlockA(Integer a) {
         lock.lock();
-        lockedA = false;
+        dataA.add(a);
         if (waitingForAnB > 0) {
             partA.signal();
         } else {
@@ -90,9 +111,9 @@ public class DuplexMonitor {
         lock.unlock();
     }
 
-    public void unlockB() {
+    public void unlockB(Integer b) {
         lock.lock();
-        lockedB = false;
+        dataB.add(b);
         if (waitingForAnB > 0) {
             partB.signal();
         } else {
@@ -102,9 +123,9 @@ public class DuplexMonitor {
         lock.unlock();
     }
 
-    public void unlockPartA() {
+    public void unlockPartA(Integer a) {
         lock.lock();
-        lockedA = false;
+        dataA.add(a);
         if (waitingForA > 0) {
             justA.signal();
         } else {
@@ -114,9 +135,9 @@ public class DuplexMonitor {
         lock.unlock();
     }
 
-    public void unlockPartB() {
+    public void unlockPartB(Integer b) {
         lock.lock();
-        lockedB = false;
+        dataB.add(b);
         if (waitingForB > 0) {
             justB.signal();
         } else {
