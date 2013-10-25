@@ -33,7 +33,7 @@ public class BufferLock implements Buffer {
         lock.unlock();
     }
 
-    public Integer popElement() {
+    public Integer poolElement() {
         lock.lock();
         while (data.isEmpty()) {
             try {

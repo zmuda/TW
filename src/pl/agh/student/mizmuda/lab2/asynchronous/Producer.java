@@ -1,4 +1,4 @@
-package pl.agh.student.mizmuda.lab2.common;
+package pl.agh.student.mizmuda.lab2.asynchronous;
 
 import java.util.Random;
 
@@ -17,7 +17,7 @@ public class Producer implements Runnable {
                 Thread.sleep(random.nextInt(100));
             } catch (InterruptedException e) {
             }
-            buffer.pushElement(new Integer(1));
+
         }
     }
 }

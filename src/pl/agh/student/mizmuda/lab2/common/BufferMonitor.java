@@ -26,7 +26,7 @@ public class BufferMonitor implements Buffer {
         logger.info("added element\t\t" + getString());
     }
 
-    public synchronized Integer popElement() {
+    public synchronized Integer poolElement() {
         while (data.isEmpty()) {
             try {
                 wait();

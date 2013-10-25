@@ -20,7 +20,7 @@ public class Consumer implements Runnable {
                 Thread.sleep(12);
             } catch (InterruptedException e) {
             }
-            buffer.popElements(random.nextInt(M) + 1);
+            buffer.poolElements(random.nextInt(M) + 1);
         }
     }
 }

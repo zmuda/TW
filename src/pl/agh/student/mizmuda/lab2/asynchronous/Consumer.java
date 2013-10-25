@@ -1,12 +1,12 @@
-package pl.agh.student.mizmuda.lab2.common;
+package pl.agh.student.mizmuda.lab2.asynchronous;
 
 import java.util.Random;
 
-public class Producer implements Runnable {
+public class Consumer implements Runnable {
     private final Buffer buffer;
     private final Random random = new Random(System.currentTimeMillis());
 
-    public Producer(Buffer buffer) {
+    public Consumer(Buffer buffer) {
         this.buffer = buffer;
     }
 
@@ -14,10 +14,10 @@ public class Producer implements Runnable {
     public void run() {
         while (true) {
             try {
-                Thread.sleep(random.nextInt(100));
+                Thread.sleep(random.nextInt(1000));
             } catch (InterruptedException e) {
             }
-            buffer.pushElement(new Integer(1));
+            buffer.popElement();
         }
     }
 }

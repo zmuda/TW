@@ -35,7 +35,7 @@ public class Buffer {
         lock.unlock();
     }
 
-    public Collection<Integer> popElements(int howMany) {
+    public Collection<Integer> poolElements(int howMany) {
         lock.lock();
         while (data.size() < howMany) {
             try {
