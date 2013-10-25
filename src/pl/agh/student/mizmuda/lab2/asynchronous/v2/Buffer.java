@@ -1,9 +1,8 @@
-package pl.agh.student.mizmuda.lab2.asynchronous.v1;
+package pl.agh.student.mizmuda.lab2.asynchronous.v2;
 
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -13,8 +12,11 @@ public class Buffer<T> {
     private Logger logger;
     ReentrantLock lock = new ReentrantLock();
     private Condition notEmpty = lock.newCondition();
+    private Condition notFull = lock.newCondition();
     private ArrayList<T> data;
     private BufferState[] dataStates;
+    private Queue<Integer> indicesOfProduced;
+    private Map<Runnable, Condition> conditions = new HashMap<Runnable, Condition>();
 
 
     public Buffer(int limit, String loggerRef) {
@@ -22,6 +24,7 @@ public class Buffer<T> {
         logger = Logger.getLogger(loggerRef);
         data = new ArrayList<T>(limit);
         dataStates = new BufferState[limit];
+        indicesOfProduced = new LinkedList<Integer>();
         for (int i = 0; i < limit; i++) {
             dataStates[i] = BufferState.EMPTY;
             data.add(null);
@@ -32,10 +35,8 @@ public class Buffer<T> {
         lock.lock();
         Integer index = getIndexForAdd();
         lock.unlock();
-        if (index != null) {
-            add(index, element);
-            finalizeAdd(index);
-        }
+        add(index, element);
+        finalizeAdd(index);
     }
 
     public T poolElement() {
@@ -66,7 +67,7 @@ public class Buffer<T> {
     private Integer fetchIndexOfEmpty() {
         for (int i = 0; i < limit; i++) {
             if (dataStates[i] == BufferState.EMPTY) {
-                dataStates[i] = BufferState.RESERVED;
+                dataStates[i] = BufferState.RESERVED_ADDITION;
                 return i;
             }
         }
@@ -76,6 +77,7 @@ public class Buffer<T> {
     private Integer fetchIndexOfFull() {
         for (int i = 0; i < limit; i++) {
             if (dataStates[i] == BufferState.OCCUPIED) {
+                dataStates[i] = BufferState.RESERVED_DELETION;
                 return i;
             }
         }
@@ -84,17 +86,20 @@ public class Buffer<T> {
 
     private Integer getIndexForAdd() {
         Integer address = fetchIndexOfEmpty();
-        if (address == null) {
-            logger.info("skipping addition");
-        } else {
-            logger.info("reserved space\t\t" + getString());
+        while (address == null) {
+            try {
+                notFull.await();
+            } catch (InterruptedException e) {
+            } finally {
+                address = fetchIndexOfEmpty();
+            }
         }
         return address;
     }
 
     private void finalizeAdd(int index) {
         lock.lock();
-        if (dataStates[index] != BufferState.RESERVED) {
+        if (dataStates[index] != BufferState.RESERVED_ADDITION) {
             throw new IllegalAccessError("Add contract violated");
         }
         dataStates[index] = BufferState.OCCUPIED;
@@ -119,11 +124,12 @@ public class Buffer<T> {
 
     private void finalizeGet(int address) {
         lock.lock();
-        if (dataStates[address] != BufferState.OCCUPIED) {
+        if (dataStates[address] != BufferState.RESERVED_DELETION) {
             throw new IllegalAccessError("Get contract violated");
         }
         dataStates[address] = BufferState.EMPTY;
         logger.info("get finished:\t\t" + getString());
+        notFull.signal();
         lock.unlock();
     }
 
@@ -139,7 +145,8 @@ public class Buffer<T> {
     private enum BufferState {
         OCCUPIED("■"),
         EMPTY("□"),
-        RESERVED("◊");
+        RESERVED_ADDITION("◊"),
+        RESERVED_DELETION("♦");
         private String representation;
 
         BufferState(String s) {
