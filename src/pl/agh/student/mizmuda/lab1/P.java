@@ -24,19 +24,23 @@ public class P implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-            Product product = Product.newInstance();
-            logger.info(id + " has ready product");
-            spaceInProduction.P();
-            logger.info(id + " reserved space for product");
-            logger.info(Main.buffersOccupationString(production));
-            insertingToProduction.P();
-            production[productionInsertIndex.value] = product;
-            productionInsertIndex.incrementModulo(production.length);
-            logger.info(Main.buffersOccupationString(production));
-            logger.info(id + " passed product");
-            insertingToProduction.V();
-            availableInProduction.V();
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                Product product = Product.newInstance();
+                logger.info(id + " has ready product");
+                spaceInProduction.P();
+                logger.info(id + " reserved space for product");
+                logger.info(Main.buffersOccupationString(production));
+                insertingToProduction.P();
+                production[productionInsertIndex.value] = product;
+                productionInsertIndex.incrementModulo(production.length);
+                logger.info(Main.buffersOccupationString(production));
+                logger.info(id + " passed product");
+                insertingToProduction.V();
+                availableInProduction.V();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }

@@ -12,12 +12,13 @@ public class Producer implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-            try {
+        try {
+            while (!Thread.currentThread().isInterrupted()) {
                 Thread.sleep(random.nextInt(100));
-            } catch (InterruptedException e) {
+                buffer.pushElement(new Integer(1));
             }
-            buffer.pushElement(new Integer(1));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }

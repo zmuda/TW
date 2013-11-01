@@ -30,31 +30,35 @@ public class S implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-            for (int i = 0; i < packageSize; i++) {
-                availableInProduction.P();
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                for (int i = 0; i < packageSize; i++) {
+                    availableInProduction.P();
+                }
+                logger.info("S reserved " + packageSize + " products");
+                for (int i = 0; i < packageSize; i++) {
+                    spaceInRelease.P();
+                }
+                logger.info("S reserved " + packageSize + " places");
+                logger.info(Main.buffersOccupationString(production) + "\t" + Main.buffersOccupationString(release));
+                for (int i = 0; i < packageSize; i++) {
+                    release[releaseInsertIndex.value] = production[productionDeleteIndex.value];
+                    production[productionDeleteIndex.value] = null;
+                    releaseInsertIndex.incrementModulo(release.length);
+                    productionDeleteIndex.incrementModulo(production.length);
+                }
+                for (int i = 0; i < packageSize; i++) {
+                    availableInRelease.V();
+                }
+                logger.info("S moved " + packageSize + " products");
+                logger.info(Main.buffersOccupationString(production) + "\t" + Main.buffersOccupationString(release));
+                for (int i = 0; i < packageSize; i++) {
+                    spaceInProduction.V();
+                }
+                logger.info("S released space for " + packageSize + " products");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
-            logger.info("S reserved " + packageSize + " products");
-            for (int i = 0; i < packageSize; i++) {
-                spaceInRelease.P();
-            }
-            logger.info("S reserved " + packageSize + " places");
-            logger.info(Main.buffersOccupationString(production) + "\t" + Main.buffersOccupationString(release));
-            for (int i = 0; i < packageSize; i++) {
-                release[releaseInsertIndex.value] = production[productionDeleteIndex.value];
-                production[productionDeleteIndex.value] = null;
-                releaseInsertIndex.incrementModulo(release.length);
-                productionDeleteIndex.incrementModulo(production.length);
-            }
-            for (int i = 0; i < packageSize; i++) {
-                availableInRelease.V();
-            }
-            logger.info("S moved " + packageSize + " products");
-            logger.info(Main.buffersOccupationString(production) + "\t" + Main.buffersOccupationString(release));
-            for (int i = 0; i < packageSize; i++) {
-                spaceInProduction.V();
-            }
-            logger.info("S released space for " + packageSize + " products");
         }
     }
 }

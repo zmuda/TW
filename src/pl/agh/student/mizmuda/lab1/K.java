@@ -22,23 +22,27 @@ public class K implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-            for (int i = 0; i < packageSize; i++) {
-                availableInRelease.P();
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                for (int i = 0; i < packageSize; i++) {
+                    availableInRelease.P();
+                }
+                logger.info("K reserved " + packageSize + " products");
+                logger.info("\t" + Main.buffersOccupationString(release));
+                for (int i = 0; i < packageSize; i++) {
+                    Product.destroyInstance(release[releaseDeleteIndex.value]);
+                    release[releaseDeleteIndex.value] = null;
+                    releaseDeleteIndex.incrementModulo(release.length);
+                }
+                logger.info("\t" + Main.buffersOccupationString(release));
+                logger.info("K consumed " + packageSize + " products");
+                for (int i = 0; i < packageSize; i++) {
+                    spaceInRelease.V();
+                }
+                logger.info("K released space for " + packageSize + " products");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
-            logger.info("K reserved " + packageSize + " products");
-            logger.info("\t" + Main.buffersOccupationString(release));
-            for (int i = 0; i < packageSize; i++) {
-                Product.destroyInstance(release[releaseDeleteIndex.value]);
-                release[releaseDeleteIndex.value] = null;
-                releaseDeleteIndex.incrementModulo(release.length);
-            }
-            logger.info("\t" + Main.buffersOccupationString(release));
-            logger.info("K consumed " + packageSize + " products");
-            for (int i = 0; i < packageSize; i++) {
-                spaceInRelease.V();
-            }
-            logger.info("K released space for " + packageSize + " products");
         }
     }
 }

@@ -13,12 +13,13 @@ public class Consumer implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-            try {
+        try {
+            while (!Thread.currentThread().isInterrupted()) {
                 Thread.sleep(random.nextInt(100));
-            } catch (InterruptedException e) {
+                buffer.poolElement();
             }
-            buffer.poolElement();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }

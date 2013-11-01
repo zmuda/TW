@@ -14,24 +14,18 @@ public class BufferMonitor implements Buffer {
         logger = Logger.getLogger(loggerRef);
     }
 
-    public synchronized void pushElement(Integer element) {
+    public synchronized void pushElement(Integer element) throws InterruptedException {
         while (data.size() == limit) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-            }
+            wait();
         }
         data.push(element);
         notify();
         logger.info("added element\t\t" + getString());
     }
 
-    public synchronized Integer poolElement() {
+    public synchronized Integer poolElement() throws InterruptedException {
         while (data.isEmpty()) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-            }
+            wait();
         }
         notify();
         Integer tmp = data.poll();

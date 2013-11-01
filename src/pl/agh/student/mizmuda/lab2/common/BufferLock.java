@@ -19,13 +19,10 @@ public class BufferLock implements Buffer {
         logger = Logger.getLogger(loggerRef);
     }
 
-    public void pushElement(Integer element) {
+    public void pushElement(Integer element) throws InterruptedException {
         lock.lock();
         while (data.size() == limit) {
-            try {
-                notFull.await();
-            } catch (InterruptedException e) {
-            }
+            notFull.await();
         }
         data.push(element);
         logger.info("added element\t\t" + getString());
@@ -33,13 +30,10 @@ public class BufferLock implements Buffer {
         lock.unlock();
     }
 
-    public Integer poolElement() {
+    public Integer poolElement() throws InterruptedException {
         lock.lock();
         while (data.isEmpty()) {
-            try {
-                notEmpty.await();
-            } catch (InterruptedException e) {
-            }
+            notEmpty.await();
         }
         Integer tmp = data.poll();
         logger.info("\treturned element " + getString());

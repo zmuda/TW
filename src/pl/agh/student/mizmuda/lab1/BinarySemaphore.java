@@ -10,21 +10,13 @@ public class BinarySemaphore {
     }
 
     public synchronized void V() {
-        if (opened) {
-            throw new IllegalStateException();
-        }
         this.opened = true;
         notify();
-
     }
 
-    public synchronized void P() {
+    public synchronized void P() throws InterruptedException {
         while (!opened) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                //om nom nom - exception eaten
-            }
+            wait();
         }
         this.opened = false;
 
