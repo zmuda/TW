@@ -3,29 +3,28 @@ package pl.agh.student.mizmuda.lab3;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Buffer implements IBuffer {
     private Logger logger = Logger.getLogger("lab3");
-    private final ReentrantLock lock = new ReentrantLock();
-    private final Condition elementsAvailable = lock.newCondition();
-    private final Condition spaceAvailable = lock.newCondition();
+    private final ReentrantLock lockEmptyQueue = new ReentrantLock();
+    private final ReentrantLock lockFullQueue = new ReentrantLock();
+    private final Condition elementsAvailable = lockFullQueue.newCondition();
+    private final Condition spaceAvailable = lockEmptyQueue.newCondition();
     private final Queue<Integer> emptyAddresses;
     private final Queue<Integer> fullAddresses;
     private final int arraySize;
-    private ArrayList<ElementState> states;
+    private List<ElementState> states;
 
 
     public Buffer(int arraySize) {
         this.emptyAddresses = new LinkedList<Integer>();
         this.fullAddresses = new LinkedList<Integer>();
-        this.states = new ArrayList<ElementState>(arraySize);
+        this.states = Collections.synchronizedList(new ArrayList<ElementState>(arraySize));
         this.arraySize = arraySize;
-        for (int i = 0; i < arraySize; i++) {
+        for (int i = 0; i < this.arraySize; i++) {
             emptyAddresses.add(i);
             states.add(ElementState.EMPTY);
         }
@@ -34,7 +33,7 @@ public class Buffer implements IBuffer {
 
     @Override
     public int acquireEmpty() throws InterruptedException {
-        lock.lock();
+        lockEmptyQueue.lock();
         int tmp;
         try {
             while (emptyAddresses.isEmpty()) {
@@ -43,7 +42,7 @@ public class Buffer implements IBuffer {
             tmp = emptyAddresses.poll();
             states.set(tmp, ElementState.BEING_FILLED);
         } finally {
-            lock.unlock();
+            lockEmptyQueue.unlock();
         }
         logger.info(getStateString());
         return tmp;
@@ -51,7 +50,7 @@ public class Buffer implements IBuffer {
 
     @Override
     public void finalizeFilling(int address) {
-        lock.lock();
+        lockFullQueue.lock();
         if (states.get(address) != ElementState.BEING_FILLED) {
             throw new IllegalStateException("acquire - finalize contract broken");
         }
@@ -59,12 +58,12 @@ public class Buffer implements IBuffer {
         states.set(address, ElementState.FULL);
         elementsAvailable.signal();
         logger.info(getStateString());
-        lock.unlock();
+        lockFullQueue.unlock();
     }
 
     @Override
     public int acquireFull() throws InterruptedException {
-        lock.lock();
+        lockFullQueue.lock();
         int tmp;
         try {
             while (fullAddresses.isEmpty()) {
@@ -73,7 +72,7 @@ public class Buffer implements IBuffer {
             tmp = fullAddresses.poll();
             states.set(tmp, ElementState.BEING_EMPTIED);
         } finally {
-            lock.unlock();
+            lockFullQueue.unlock();
         }
         logger.info(getStateString());
         return tmp;
@@ -81,7 +80,7 @@ public class Buffer implements IBuffer {
 
     @Override
     public void finalizeEmptying(int address) {
-        lock.lock();
+        lockEmptyQueue.lock();
         if (states.get(address) != ElementState.BEING_EMPTIED) {
             throw new IllegalStateException("acquire - finalize contract broken");
         }
@@ -89,7 +88,7 @@ public class Buffer implements IBuffer {
         states.set(address, ElementState.EMPTY);
         spaceAvailable.signal();
         logger.info(getStateString());
-        lock.unlock();
+        lockEmptyQueue.unlock();
     }
 
     private String getStateString() {
