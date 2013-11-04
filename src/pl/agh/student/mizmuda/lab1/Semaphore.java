@@ -2,9 +2,6 @@ package pl.agh.student.mizmuda.lab1;
 
 public class Semaphore {
     private volatile int value;
-    private volatile int toWake = 0;
-    private volatile int awaitingForWake = 0;
-    private volatile int toLetIn = 0;
 
 
     public Semaphore(int value) {
