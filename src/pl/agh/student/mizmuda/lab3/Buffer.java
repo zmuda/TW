@@ -3,7 +3,9 @@ package pl.agh.student.mizmuda.lab3;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -11,22 +13,51 @@ public class Buffer implements IBuffer {
     private Logger logger = Logger.getLogger("lab3");
     private final ReentrantLock lockEmptyQueue = new ReentrantLock();
     private final ReentrantLock lockFullQueue = new ReentrantLock();
+    private final ReentrantLock lockStatesArray = new ReentrantLock();
     private final Condition elementsAvailable = lockFullQueue.newCondition();
     private final Condition spaceAvailable = lockEmptyQueue.newCondition();
     private final Queue<Integer> emptyAddresses;
     private final Queue<Integer> fullAddresses;
     private final int arraySize;
-    private List<ElementState> states;
+    private ArrayList<ElementState> states;
 
+    private void setState(int address, ElementState state) {
+        lockStatesArray.lock();
+        try {
+            states.set(address, state);
+        } finally {
+            lockStatesArray.unlock();
+        }
+    }
+
+    private ElementState getState(int address) {
+        ElementState state;
+        lockStatesArray.lock();
+        try {
+            state = states.get(address);
+        } finally {
+            lockStatesArray.unlock();
+        }
+        return state;
+    }
+
+    private void addNextState(ElementState state) {
+        lockStatesArray.lock();
+        try {
+            states.add(state);
+        } finally {
+            lockStatesArray.unlock();
+        }
+    }
 
     public Buffer(int arraySize) {
         this.emptyAddresses = new LinkedList<Integer>();
         this.fullAddresses = new LinkedList<Integer>();
-        this.states = Collections.synchronizedList(new ArrayList<ElementState>(arraySize));
+        this.states = new ArrayList<ElementState>(arraySize);
         this.arraySize = arraySize;
         for (int i = 0; i < this.arraySize; i++) {
             emptyAddresses.add(i);
-            states.add(ElementState.EMPTY);
+            addNextState(ElementState.EMPTY);
         }
         BasicConfigurator.configure();
     }
@@ -51,14 +82,17 @@ public class Buffer implements IBuffer {
     @Override
     public void finalizeFilling(int address) {
         lockFullQueue.lock();
-        if (states.get(address) != ElementState.BEING_FILLED) {
-            throw new IllegalStateException("acquire - finalize contract broken");
+        try {
+            if (getState(address) != ElementState.BEING_FILLED) {
+                throw new IllegalStateException("acquire - finalize contract broken");
+            }
+            fullAddresses.add(address);
+            setState(address, ElementState.FULL);
+            elementsAvailable.signal();
+            logger.info(getStateString());
+        } finally {
+            lockFullQueue.unlock();
         }
-        fullAddresses.add(address);
-        states.set(address, ElementState.FULL);
-        elementsAvailable.signal();
-        logger.info(getStateString());
-        lockFullQueue.unlock();
     }
 
     @Override
@@ -70,7 +104,7 @@ public class Buffer implements IBuffer {
                 elementsAvailable.await();
             }
             tmp = fullAddresses.poll();
-            states.set(tmp, ElementState.BEING_EMPTIED);
+            setState(tmp, ElementState.BEING_EMPTIED);
         } finally {
             lockFullQueue.unlock();
         }
@@ -81,21 +115,29 @@ public class Buffer implements IBuffer {
     @Override
     public void finalizeEmptying(int address) {
         lockEmptyQueue.lock();
-        if (states.get(address) != ElementState.BEING_EMPTIED) {
-            throw new IllegalStateException("acquire - finalize contract broken");
+        try {
+            if (getState(address) != ElementState.BEING_EMPTIED) {
+                throw new IllegalStateException("acquire - finalize contract broken");
+            }
+            emptyAddresses.add(address);
+            setState(address, ElementState.EMPTY);
+            spaceAvailable.signal();
+            logger.info(getStateString());
+        } finally {
+            lockEmptyQueue.unlock();
         }
-        emptyAddresses.add(address);
-        states.set(address, ElementState.EMPTY);
-        spaceAvailable.signal();
-        logger.info(getStateString());
-        lockEmptyQueue.unlock();
     }
 
     private String getStateString() {
         StringBuffer res = new StringBuffer(this.toString());
         res.append(" - occupation - ");
-        for (ElementState e : states) {
-            res.append(e.getRepresentation());
+        lockStatesArray.lock();
+        try {
+            for (ElementState e : states) {
+                res.append(e.getRepresentation());
+            }
+        } finally {
+            lockStatesArray.unlock();
         }
         return res.toString();
     }
