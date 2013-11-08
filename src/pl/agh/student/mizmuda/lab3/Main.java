@@ -4,8 +4,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
-    private static int producers = 4;
-    private static int consumers = 4;
+    private static int producers = 5;
+    private static int consumers = 5;
     private static int bufferSize = 12;
 
 
