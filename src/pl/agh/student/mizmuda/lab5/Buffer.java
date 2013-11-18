@@ -30,6 +30,7 @@ public class Buffer implements IBuffer {
         this.fullAddresses = new LinkedList<Integer>();
         this.states = new ArrayList<ElementState>(arraySize);
         this.arraySize = arraySize;
+        assert arraySize % 2 == 0;
         for (int i = 0; i < this.arraySize; i++) {
             emptyAddresses.add(i);
             states.add(ElementState.EMPTY);
@@ -48,12 +49,13 @@ public class Buffer implements IBuffer {
             while (emptyAddresses.size() < num) {
                 firstForSpace.await();
             }
-            while (emptyAddresses.size() < num) {
+            while (addresses.size() < num) {
                 Integer tmp = emptyAddresses.poll();
                 addresses.add(tmp);
                 states.set(tmp, ElementState.BEING_FILLED);
             }
             logger.info(getStateString());
+            restForSpace.signal();
         } finally {
             lock.unlock();
         }
@@ -71,12 +73,13 @@ public class Buffer implements IBuffer {
             while (fullAddresses.size() < num) {
                 firstForElements.await();
             }
-            while (fullAddresses.size() < num) {
+            while (addresses.size() < num) {
                 Integer tmp = fullAddresses.poll();
                 addresses.add(tmp);
                 states.set(tmp, ElementState.BEING_EMPTIED);
             }
             logger.info(getStateString());
+            restForElements.signal();
         } finally {
             lock.unlock();
         }
@@ -88,14 +91,15 @@ public class Buffer implements IBuffer {
         lock.lock();
         try {
             for (Integer address : positions) {
-                if (states.get(address) != ElementState.BEING_FILLED) {
+                if (states.get(address) != ElementState.BEING_EMPTIED) {
                     throw new IllegalStateException("acquire - release contract broken");
                 }
-                fullAddresses.add(address);
-                states.set(address, ElementState.FULL);
+                emptyAddresses.add(address);
+                states.set(address, ElementState.EMPTY);
             }
-            firstForElements.signal();
             logger.info(getStateString());
+            firstForSpace.signal();
+            //restForSpace.signal();
         } finally {
             lock.unlock();
         }
@@ -106,14 +110,15 @@ public class Buffer implements IBuffer {
         lock.lock();
         try {
             for (Integer address : positions) {
-                if (states.get(address) != ElementState.BEING_EMPTIED) {
+                if (states.get(address) != ElementState.BEING_FILLED) {
                     throw new IllegalStateException("acquire - release contract broken");
                 }
-                emptyAddresses.add(address);
-                states.set(address, ElementState.EMPTY);
+                fullAddresses.add(address);
+                states.set(address, ElementState.FULL);
             }
-            firstForSpace.signal();
             logger.info(getStateString());
+            firstForElements.signal();
+            //restForElements.signal();
         } finally {
             lock.unlock();
         }
