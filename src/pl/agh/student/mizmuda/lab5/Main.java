@@ -8,8 +8,8 @@ import java.util.concurrent.Executors;
 public class Main {
     public static void main(String[] args) {
         BasicConfigurator.configure();
-        int prods = 5;
-        int cons = 5;
+        int prods = 50;
+        int cons = 50;
         int M = 28;
         IBuffer buffer = new Buffer(2 * M);
         ExecutorService service = Executors.newFixedThreadPool(prods + cons);
