@@ -89,9 +89,11 @@ public class ResourcePool {
                 eligibleForAB.await();
                 if (queueA.size() > 0 && ret[0] == -1) {
                     ret[0] = queueA.remove();
+                    A.signal();//other processes might want to use it
                 }
                 if (queueB.size() > 0 && ret[1] == -1) {
                     ret[1] = queueB.remove();
+                    B.signal();//other processes might want to use it as well
                 }
             }
         } catch (InterruptedException caught) {
