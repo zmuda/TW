@@ -9,24 +9,21 @@ public class ReadingRoom {
     private Condition writers = lock.newCondition();
     private int activeReaders = 0;
     private boolean activeWriter = false;
+    private boolean readersDoNotJoin = false;
 
     public void startReading() throws InterruptedException {
         lock.lock();
         try {
             //przepuszczamy jednego pisarza Z KOLEJKI aby nie zagładzać pisarzy
             if (!activeWriter && lock.hasWaiters(writers)) {
-                //wpuszczamy jednego pisarza
-                writers.signal();
-                readers.await();
+                readersDoNotJoin = true;
             }
             //po ewentualnym przepuszczeniu, czekamy aż czytanie się zakończy
-            while (activeWriter) {
+            //czekamy też, jeżeli przepuszczany nie zaczął pisać
+            while (activeWriter || readersDoNotJoin) {
                 readers.await();
             }
             activeReaders++;
-        } catch (InterruptedException caught) {
-            activeReaders--;
-            throw caught;
         } finally {
             lock.unlock();
         }
@@ -48,9 +45,8 @@ public class ReadingRoom {
                 writers.await();
             }
             activeWriter = true;
-        } catch (InterruptedException caught) {
-            activeWriter = false;
-            throw caught;
+            //zaczęliśmy pisanie - nie musimy wstrzymywać czytelników, którzy nas przepuszczają
+            readersDoNotJoin = false;
         } finally {
             lock.unlock();
         }
