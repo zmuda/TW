@@ -9,20 +9,24 @@ public class ReadingRoom {
     private Condition writers = lock.newCondition();
     private int activeReaders = 0;
     private boolean activeWriter = false;
-    private boolean readersDoNotJoin = false;
+    private boolean lettingTrough = false;
+    private boolean readerWhoLetWriterResumed = false;
+    private boolean gotTrough = false;
 
     public void startReading() throws InterruptedException {
         lock.lock();
         try {
-            //przepuszczamy jednego pisarza Z KOLEJKI aby nie zagładzać pisarzy
-            if (!activeWriter && lock.hasWaiters(writers)) {
-                readersDoNotJoin = true;
+            //przepuszczamy JEDNEGO pisarza Z KOLEJKI aby nie zagładzać pisarzy
+            if (!activeWriter && lock.hasWaiters(writers) && !lettingTrough && readerWhoLetWriterResumed) {
+                lettingTrough = true;
+                readerWhoLetWriterResumed = false;
             }
             //po ewentualnym przepuszczeniu, czekamy aż czytanie się zakończy
             //czekamy też, jeżeli przepuszczany nie zaczął pisać
-            while (activeWriter || readersDoNotJoin) {
+            while (activeWriter || lettingTrough) {
                 readers.await();
             }
+            readerWhoLetWriterResumed = true;
             activeReaders++;
         } finally {
             lock.unlock();
@@ -45,8 +49,6 @@ public class ReadingRoom {
                 writers.await();
             }
             activeWriter = true;
-            //zaczęliśmy pisanie - nie musimy wstrzymywać czytelników, którzy nas przepuszczają
-            readersDoNotJoin = false;
         } finally {
             lock.unlock();
         }
@@ -54,8 +56,13 @@ public class ReadingRoom {
 
     public void finishWriting() {
         lock.lock();
+        lettingTrough = false;
         activeWriter = false;
-        readers.signalAll();
+        if (lock.hasWaiters(readers)) {
+            readers.signalAll();
+        } else {
+            writers.signal();
+        }
         lock.unlock();
     }
 
