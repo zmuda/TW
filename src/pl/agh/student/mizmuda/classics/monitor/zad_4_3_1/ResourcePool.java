@@ -87,10 +87,10 @@ public class ResourcePool {
             }
             while ((ret[0] == -1 && queueA.size() == 0) || (ret[1] == -1 && queueB.size() == 0)) {
                 eligibleForAB.await();
-                if (queueA.size() > 0) {
+                if (queueA.size() > 0 && ret[0] == -1) {
                     ret[0] = queueA.remove();
                 }
-                if (queueB.size() > 0) {
+                if (queueB.size() > 0 && ret[1] == -1) {
                     ret[1] = queueB.remove();
                 }
             }
