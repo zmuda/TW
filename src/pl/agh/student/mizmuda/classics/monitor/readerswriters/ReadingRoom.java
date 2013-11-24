@@ -17,12 +17,14 @@ public class ReadingRoom {
         lock.lock();
         try {
             //przepuszczamy JEDNEGO pisarza Z KOLEJKI aby nie zagładzać pisarzy
+            //jeżeli czytelnik przepuszcza kogoś inny nie może przepuszczać kolejnego
+            //dopóki poprzedni (albo jakikolwiek inny) nie wznowi pracy (zakończy przepuszczać)
             if (!activeWriter && lock.hasWaiters(writers) && !lettingTrough && readerWhoLetWriterResumed) {
                 lettingTrough = true;
                 readerWhoLetWriterResumed = false;
             }
             //po ewentualnym przepuszczeniu, czekamy aż czytanie się zakończy
-            //czekamy też, jeżeli przepuszczany nie zaczął pisać
+            //czekamy też, jeżeli przepuszczany nie skończył pisać
             while (activeWriter || lettingTrough) {
                 readers.await();
             }
