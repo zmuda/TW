@@ -45,9 +45,12 @@ public class ResourcePool {
         queueA.add(address);
         if (lock.hasWaiters(eligibleForAB)) {
             eligibleForAB.signal();
-        } else {
+        } else if (lock.hasWaiters(AB)) {
             AB.signal();
+        } else {
+            A.signal();
         }
+        lock.unlock();
     }
 
     public int getB() throws InterruptedException {
@@ -72,7 +75,6 @@ public class ResourcePool {
         } else if (lock.hasWaiters(AB)) {
             AB.signal();
         } else {
-            A.signal();
             B.signal();
         }
         lock.unlock();
