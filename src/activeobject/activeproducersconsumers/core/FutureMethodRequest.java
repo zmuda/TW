@@ -1,6 +1,8 @@
 package activeobject.activeproducersconsumers.core;
 
 
+import activeobject.LongCollecter;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
@@ -8,11 +10,14 @@ public class FutureMethodRequest<T> extends FutureTask<T> {
 
     private final IMethodRequest<T> methodRequest;
 
-    public FutureMethodRequest(final IMethodRequest<T> request) {
+    public FutureMethodRequest(final IMethodRequest<T> request, final LongCollecter activeObjectExecutionTime) {
         super(new Callable<T>() {
             @Override
             public T call() throws Exception {
-                return request.execute();
+                long time = System.currentTimeMillis();
+                T result = request.execute();
+                activeObjectExecutionTime.submit(System.currentTimeMillis() - time);
+                return result;
             }
         });
         this.methodRequest = request;
