@@ -1,6 +1,7 @@
 package activeobject.activeproducersconsumers.problemspecific;
 
 
+import activeobject.TaskDuration;
 import activeobject.activeproducersconsumers.core.IMethodRequest;
 import org.apache.log4j.Logger;
 
@@ -25,16 +26,12 @@ public class ConsumeRequest<T> implements IMethodRequest<T> {
     }
 
     @Override
-    public T execute() {
+    public T execute() throws InterruptedException {
         logger.info("consumes: " + howMany);
         T ret = null;
         for (int i = 0; i < howMany; i++) {
             ret = buffer.poll();
-            /* keeping busy */
-            int tmp = random.nextInt(40);
-            while (tmp > 0) {
-                tmp = random.nextInt(40);
-            }
+            TaskDuration.waitForItemToConsume();
         }
         logger.info("Consumed: " + howMany);
         logger.info("\t>>>: " + buffer.size());

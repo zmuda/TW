@@ -1,6 +1,7 @@
 package activeobject.activeproducersconsumers.problemspecific;
 
 
+import activeobject.TaskDuration;
 import activeobject.activeproducersconsumers.core.IMethodRequest;
 import org.apache.log4j.Logger;
 
@@ -29,14 +30,10 @@ public class ProduceRequest<T> implements IMethodRequest<T> {
     }
 
     @Override
-    public T execute() {
+    public T execute() throws InterruptedException {
         logger.info("produces: " + howMany);
         for (int i = 0; i < howMany; i++) {
-            /* keeping busy */
-            int tmp = random.nextInt(40);
-            while (tmp > 0) {
-                tmp = random.nextInt(40);
-            }
+            TaskDuration.waitForItemToProduce();
             buffer.add(instance);
         }
         logger.info("Produced: " + howMany);

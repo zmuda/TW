@@ -22,7 +22,7 @@ public class Producer implements Runnable {
     public void run() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                Future<Integer> future = service.produce(random.nextInt(bufferLimit) / 2);
+                Future<Integer> future = service.produce(1);
                 future.get();
             }
         } catch (InterruptedException e) {

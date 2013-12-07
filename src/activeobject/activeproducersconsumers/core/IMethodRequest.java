@@ -4,7 +4,7 @@ public interface IMethodRequest<T> {
 
     public boolean guard();
 
-    public T execute();
+    public T execute() throws InterruptedException;
 
     public void eventually();
 }

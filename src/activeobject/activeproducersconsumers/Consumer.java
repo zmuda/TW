@@ -22,7 +22,7 @@ public class Consumer implements Runnable {
     public void run() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                Future<Integer> future = service.consume(random.nextInt(bufferLimit / 2));
+                Future<Integer> future = service.consume(1);
                 future.get();
             }
         } catch (InterruptedException e) {

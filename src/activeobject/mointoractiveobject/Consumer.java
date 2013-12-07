@@ -1,11 +1,10 @@
 package activeobject.mointoractiveobject;
 
 
-import java.util.Random;
+import activeobject.TaskDuration;
 
 public class Consumer implements Runnable {
     private final IBuffer buffer;
-    private final Random random = new Random(System.currentTimeMillis());
 
     public Consumer(IBuffer buffer) {
         this.buffer = buffer;
@@ -16,7 +15,7 @@ public class Consumer implements Runnable {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 int address = buffer.acquireFull();
-                Thread.sleep(random.nextInt(1000));
+                TaskDuration.waitForItemToConsume();
                 buffer.finalizeEmptying(address);
             }
         } catch (InterruptedException e) {

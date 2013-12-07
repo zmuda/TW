@@ -46,7 +46,7 @@ public class ResultAggregator {
     }
 
     public static void main(String[] args) {
-        //launchMonitorSolution();
+        launchMonitorSolution();
         launchActiveObjectSolution();
     }
 }

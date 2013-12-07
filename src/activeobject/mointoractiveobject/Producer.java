@@ -1,11 +1,11 @@
 package activeobject.mointoractiveobject;
 
 
-import java.util.Random;
+import activeobject.TaskDuration;
 
 public class Producer implements Runnable {
     private final IBuffer buffer;
-    private final Random random = new Random(System.currentTimeMillis());
+
 
     public Producer(IBuffer buffer) {
         this.buffer = buffer;
@@ -16,7 +16,7 @@ public class Producer implements Runnable {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 int address = buffer.acquireEmpty();
-                Thread.sleep(random.nextInt(100));
+                TaskDuration.waitForItemToProduce();
                 buffer.finalizeFilling(address);
             }
         } catch (InterruptedException e) {
