@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ResultAggregator {
+public class Main {
     private static int producers = 2;
     private static int consumers = 1;
     private static int bufferSize = 12;
