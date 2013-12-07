@@ -11,13 +11,14 @@ import org.apache.log4j.Logger;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ResultAggregator {
     private static int producers = 2;
     private static int consumers = 1;
     private static int bufferSize = 12;
 
-    private static void launchMonitorSolution() {
+    private static void launchMonitorSolution() throws InterruptedException {
         IBuffer buffer = new Buffer(bufferSize);
         ExecutorService service = Executors.newFixedThreadPool(producers + consumers);
         for (int i = 0; i < producers; i++) {
@@ -26,9 +27,14 @@ public class ResultAggregator {
         for (int i = 0; i < consumers; i++) {
             service.submit(new Consumer(buffer));
         }
+
+        service.shutdown();
+        while (!service.isTerminated()) {
+            service.awaitTermination(1000, TimeUnit.MILLISECONDS);
+        }
     }
 
-    private static void launchActiveObjectSolution() {
+    private static void launchActiveObjectSolution() throws InterruptedException {
         Logger logger = Logger.getLogger("activeobject - losowa ilosc");
         Random random = new Random(System.currentTimeMillis());
 
@@ -42,10 +48,21 @@ public class ResultAggregator {
             executorService.submit(new activeobject.activeproducersconsumers.Consumer(service, random, bufferSize));
         }
         logger.info("Producers: " + producers + "\tConsumers: " + consumers + "\tBuffer for: " + bufferSize);
-        service.start();
+        ExecutorService activeObjectExecutor = Executors.newSingleThreadExecutor();
+        activeObjectExecutor.submit(service);
+
+        executorService.shutdown();
+        while (!executorService.isTerminated()) {
+            executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
+        }
+        service.shutdown();
+        activeObjectExecutor.shutdown();
+        while (!activeObjectExecutor.isTerminated()) {
+            activeObjectExecutor.awaitTermination(1000, TimeUnit.MILLISECONDS);
+        }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         launchMonitorSolution();
         launchActiveObjectSolution();
     }

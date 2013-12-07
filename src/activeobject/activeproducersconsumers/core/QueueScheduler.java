@@ -5,8 +5,13 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class QueueScheduler {
+    private boolean shutdown = false;
     private final Queue<FutureMethodRequest> queue = new LinkedList<FutureMethodRequest>();
     private FutureMethodRequest privileged;
+
+    public void queueShutdown() {
+        this.shutdown = true;
+    }
 
     public <T> void queueExecution(FutureMethodRequest<T> task) {
         synchronized (queue) {
@@ -16,12 +21,13 @@ public class QueueScheduler {
     }
 
     public void run() {
-        while (true) {
-            while (privileged == null) {
+        while (!shutdown) {
+            while (!shutdown && privileged == null) {
                 synchronized (queue) {
                     privileged = queue.poll();
                 }
             }
+            if (shutdown) continue;
             if (privileged.getMethodRequest().guard()) {
                 privileged.run();
                 privileged = null;

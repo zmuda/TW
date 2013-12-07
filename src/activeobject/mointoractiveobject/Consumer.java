@@ -12,11 +12,13 @@ public class Consumer implements Runnable {
 
     @Override
     public void run() {
+        int i = 0;
         try {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (i < TaskDuration.probeSize && !Thread.currentThread().isInterrupted()) {
                 int address = buffer.acquireFull();
                 TaskDuration.waitForItemToConsume();
                 buffer.finalizeEmptying(address);
+                i++;
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

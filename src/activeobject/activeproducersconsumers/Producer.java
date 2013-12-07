@@ -1,5 +1,6 @@
 package activeobject.activeproducersconsumers;
 
+import activeobject.TaskDuration;
 import activeobject.activeproducersconsumers.problemspecific.ProducersConsumersService;
 
 import java.util.Random;
@@ -20,10 +21,12 @@ public class Producer implements Runnable {
 
     @Override
     public void run() {
+        int i = 0;
         try {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (i < TaskDuration.probeSize && !Thread.currentThread().isInterrupted()) {
                 Future<Integer> future = service.produce(1);
                 future.get();
+                i++;
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

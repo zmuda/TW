@@ -13,11 +13,13 @@ public class Producer implements Runnable {
 
     @Override
     public void run() {
+        int i = 0;
         try {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (i < TaskDuration.probeSize && !Thread.currentThread().isInterrupted()) {
                 int address = buffer.acquireEmpty();
                 TaskDuration.waitForItemToProduce();
                 buffer.finalizeFilling(address);
+                i++;
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

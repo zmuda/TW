@@ -27,6 +27,6 @@ public class Main {
             executorService.submit(new Consumer(service, random, bufferSize));
         }
         logger.info("Producers: " + prods + "\tConsumers: " + cons + "\tBuffer for: " + bufferSize);
-        service.start();
+        service.run();
     }
 }
