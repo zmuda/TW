@@ -1,16 +1,16 @@
 package activeobject.mointoractiveobject;
 
 
-import activeobject.LongCollecter;
+import activeobject.LongCollector;
 import activeobject.TaskDuration;
 
 public class Producer implements Runnable {
     private final IBuffer buffer;
-    private LongCollecter executionTimes;
+    private LongCollector executionTimes;
     private long totalSpent;
 
 
-    public Producer(IBuffer buffer, LongCollecter executionTimes) {
+    public Producer(IBuffer buffer, LongCollector executionTimes) {
         this.buffer = buffer;
         this.executionTimes = executionTimes;
     }

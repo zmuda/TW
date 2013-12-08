@@ -1,6 +1,6 @@
 package activeobject.activeproducersconsumers;
 
-import activeobject.LongCollecter;
+import activeobject.LongCollector;
 import activeobject.TaskDuration;
 import activeobject.activeproducersconsumers.problemspecific.ProducersConsumersService;
 
@@ -13,12 +13,12 @@ public class Producer implements Runnable {
     private ProducersConsumersService<Integer> service;
     private Random random;
     private int bufferLimit;
-    private final LongCollecter executionTimes;
-    private final LongCollecter idleTimes;
+    private final LongCollector executionTimes;
+    private final LongCollector idleTimes;
     private long totalSpent = 0;
     private long notBusy = 0;
 
-    public Producer(ProducersConsumersService<Integer> service, Random random, int bufferLimit, LongCollecter executionTimes, LongCollecter idleTimes) {
+    public Producer(ProducersConsumersService<Integer> service, Random random, int bufferLimit, LongCollector executionTimes, LongCollector idleTimes) {
         this.service = service;
         this.random = random;
         this.bufferLimit = bufferLimit;

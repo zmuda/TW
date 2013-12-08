@@ -1,6 +1,6 @@
 package activeobject.activeproducersconsumers.problemspecific;
 
-import activeobject.LongCollecter;
+import activeobject.LongCollector;
 import activeobject.activeproducersconsumers.core.FutureMethodRequest;
 import activeobject.activeproducersconsumers.core.IMethodRequest;
 import activeobject.activeproducersconsumers.core.QueueScheduler;
@@ -17,9 +17,9 @@ public class ProducersConsumersService<T> extends Service {
     private final Random random;
     private final T instance;
     private final int bufferLimit;
-    private LongCollecter activeObjectExecutionTime;
+    private LongCollector activeObjectExecutionTime;
 
-    public ProducersConsumersService(int bufferLimit, T exampleInstance, LongCollecter activeObjectExecutionTime) {
+    public ProducersConsumersService(int bufferLimit, T exampleInstance, LongCollector activeObjectExecutionTime) {
         super(new QueueScheduler());
         this.activeObjectExecutionTime = activeObjectExecutionTime;
         this.random = new Random(System.currentTimeMillis());
