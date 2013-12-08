@@ -8,7 +8,7 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) throws InterruptedException, IOException {
         int entitiesCount = 10;
-        int bufferSize = 40;
+        int bufferSize = 100;
         LongCollector consumerMonitorExecutionTimes = new LongCollector();
         LongCollector producerMonitorExecutionTimes = new LongCollector();
         LongCollector producerIdleTimes = new LongCollector();
@@ -19,7 +19,7 @@ public class Main {
 
         StringBuilder builder = new StringBuilder("Entities\tIdle\tBusy\tMonitor\n");
 
-        while (entitiesCount < 100) {
+        while (entitiesCount < 200) {
             consumerMonitorExecutionTimes.reset();
             producerMonitorExecutionTimes.reset();
             producerIdleTimes.reset();
