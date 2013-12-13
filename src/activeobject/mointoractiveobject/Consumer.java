@@ -1,17 +1,14 @@
 package activeobject.mointoractiveobject;
 
 
-import activeobject.LongCollector;
 import activeobject.TaskDuration;
 
 public class Consumer implements Runnable {
     private final IBuffer buffer;
-    private LongCollector executionTimes;
     private long totalSpent;
 
-    public Consumer(IBuffer buffer, LongCollector executionTimes) {
+    public Consumer(IBuffer buffer) {
         this.buffer = buffer;
-        this.executionTimes = executionTimes;
     }
 
     @Override
@@ -28,8 +25,6 @@ public class Consumer implements Runnable {
             totalSpent += System.currentTimeMillis();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        } finally {
-            executionTimes.submit(totalSpent);
         }
     }
 }

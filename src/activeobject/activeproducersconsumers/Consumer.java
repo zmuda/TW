@@ -1,7 +1,6 @@
 package activeobject.activeproducersconsumers;
 
 
-import activeobject.LongCollector;
 import activeobject.TaskDuration;
 import activeobject.activeproducersconsumers.core.ProducersConsumersService;
 
@@ -13,17 +12,13 @@ public class Consumer implements Runnable {
     private ProducersConsumersService<Integer> service;
     private Random random;
     private int bufferLimit;
-    private final LongCollector executionTimes;
-    private final LongCollector idleTimes;
     private long totalSpent = 0;
     private long notBusy = 0;
 
-    public Consumer(ProducersConsumersService<Integer> service, Random random, int bufferLimit, LongCollector executionTimes, LongCollector idleTimes) {
+    public Consumer(ProducersConsumersService<Integer> service, Random random, int bufferLimit) {
         this.service = service;
         this.random = random;
         this.bufferLimit = bufferLimit;
-        this.executionTimes = executionTimes;
-        this.idleTimes = idleTimes;
     }
 
     @Override
@@ -43,9 +38,6 @@ public class Consumer implements Runnable {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
             e.printStackTrace();
-        } finally {
-            executionTimes.submit(totalSpent);
-            idleTimes.submit(notBusy);
         }
     }
 }
