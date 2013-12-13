@@ -8,10 +8,11 @@ import activeobject.mointoractiveobject.Producer;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class Launcher {
     private final int producers;
@@ -41,7 +42,7 @@ public class Launcher {
         }
     }
 
-    private void launchActiveObjectSolution() throws InterruptedException {
+    private void launchActiveObjectSolution() throws InterruptedException, ExecutionException {
         Logger logger = Logger.getLogger("activeobject - losowa ilosc");
         Random random = new Random(System.currentTimeMillis());
 
@@ -49,16 +50,22 @@ public class Launcher {
 
         ExecutorService executorService = Executors.newFixedThreadPool(producers + consumers);
         ProducersConsumersService<Integer> service = new ProducersConsumersService<Integer>(bufferSize, 2);
+        Collection<Callable<Integer>> entities = new LinkedList<Callable<Integer>>();
 
         for (int i = 0; i < producers; i++) {
-            executorService.submit(new activeobject.activeproducersconsumers.Producer(service, random, bufferSize));
+            entities.add(new activeobject.activeproducersconsumers.Producer(service, random, bufferSize));
         }
         for (int i = 0; i < consumers; i++) {
-            executorService.submit(new activeobject.activeproducersconsumers.Consumer(service, random, bufferSize));
+            entities.add(new activeobject.activeproducersconsumers.Consumer(service, random, bufferSize));
         }
         logger.info("Producers: " + producers + "\tConsumers: " + consumers + "\tBuffer for: " + bufferSize);
         ExecutorService activeObjectExecutor = Executors.newSingleThreadExecutor();
         activeObjectExecutor.submit(service);
+        List<Future<Integer>> results = executorService.invokeAll(entities);
+
+        for (Future<Integer> i : results) {
+            TaskAbstractionAndStats.totalSideTasks += i.get();
+        }
 
         executorService.shutdown();
         while (!executorService.isTerminated()) {
@@ -72,8 +79,13 @@ public class Launcher {
         }
     }
 
-    public void launch() throws InterruptedException {
+    public void launch() throws InterruptedException, ExecutionException {
+        TaskAbstractionAndStats.totalMonitorTime = -System.currentTimeMillis();
         launchMonitorSolution();
+        TaskAbstractionAndStats.totalMonitorTime += System.currentTimeMillis();
+        TaskAbstractionAndStats.totalActiveObjectTime = -System.currentTimeMillis();
+        TaskAbstractionAndStats.totalSideTasks = 0;
         launchActiveObjectSolution();
+        TaskAbstractionAndStats.totalActiveObjectTime += System.currentTimeMillis();
     }
 }

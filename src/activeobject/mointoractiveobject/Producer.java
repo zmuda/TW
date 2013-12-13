@@ -1,11 +1,10 @@
 package activeobject.mointoractiveobject;
 
 
-import activeobject.TaskDuration;
+import activeobject.TaskAbstractionAndStats;
 
 public class Producer implements Runnable {
     private final IBuffer buffer;
-    private long totalSpent;
 
 
     public Producer(IBuffer buffer) {
@@ -16,14 +15,13 @@ public class Producer implements Runnable {
     public void run() {
         int i = 0;
         try {
-            totalSpent = -System.currentTimeMillis();
-            while (i < TaskDuration.probeSize && !Thread.currentThread().isInterrupted()) {
+            while (i < TaskAbstractionAndStats.probeSize && !Thread.currentThread().isInterrupted()) {
                 int address = buffer.acquireEmpty();
-                TaskDuration.waitForItemToProduce();
+                TaskAbstractionAndStats.waitForItemToProduce();
                 buffer.finalizeFilling(address);
                 i++;
+                TaskAbstractionAndStats.waitForSideTaskToComplete();
             }
-            totalSpent += System.currentTimeMillis();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

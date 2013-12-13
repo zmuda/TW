@@ -1,7 +1,7 @@
 package activeobject.activeproducersconsumers.core;
 
 
-import activeobject.TaskDuration;
+import activeobject.TaskAbstractionAndStats;
 import org.apache.log4j.Logger;
 
 import java.util.Queue;
@@ -30,7 +30,7 @@ public class ConsumeRequest<T> implements IMethodRequest<T> {
         T ret = null;
         for (int i = 0; i < howMany; i++) {
             ret = buffer.poll();
-            TaskDuration.waitForItemToConsume();
+            TaskAbstractionAndStats.waitForItemToConsume();
         }
         logger.info("Consumed: " + howMany);
         logger.info("\t>>>: " + buffer.size());

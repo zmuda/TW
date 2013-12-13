@@ -14,18 +14,23 @@ public class QueueScheduler {
     }
 
     public void run() {
-        while (!shutdown) {
-            FutureMethodRequest request = queue.peekNextRequest();
-            if (request != null && request.getMethodRequest().guard()) {
-                queue.pollNextRequest();
-                request.run();
-            } else {
-                request = queue.peekNextComplementary();
+        try {
+
+            while (!shutdown) {
+                FutureMethodRequest request = queue.peekNextRequest();
                 if (request != null && request.getMethodRequest().guard()) {
-                    queue.pollNextComplementary();
+                    queue.pollNextRequest();
                     request.run();
-                }//todo any sleep period?
+                } else {
+                    request = queue.peekNextComplementary();
+                    if (request != null && request.getMethodRequest().guard()) {
+                        queue.pollNextComplementary();
+                        request.run();
+                    }//todo any sleep period?
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

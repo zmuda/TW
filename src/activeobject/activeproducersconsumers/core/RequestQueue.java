@@ -13,8 +13,9 @@ public class RequestQueue {
             consumptions.add(req);
         } else if (req.getMethodRequest() instanceof ProduceRequest) {
             productions.add(req);
+        } else {
+            throw new IllegalArgumentException();
         }
-        throw new IllegalArgumentException();
     }
 
     public synchronized FutureMethodRequest peekNextConsumption() {
@@ -36,11 +37,13 @@ public class RequestQueue {
     public synchronized FutureMethodRequest peekNextRequest() {
         FutureMethodRequest consumption = consumptions.peek();
         FutureMethodRequest production = productions.peek();
-        if (consumption.getNanoStamp() < production.getNanoStamp()) {
-            classOfDesignated = consumption.getClass();
+        if (production == null || (consumption != null && consumption.getNanoStamp() < production.getNanoStamp())) {
+            if (consumption != null) {
+                classOfDesignated = consumption.getMethodRequest().getClass();
+            }
             return consumption;
         } else {
-            classOfDesignated = production.getClass();
+            classOfDesignated = production.getMethodRequest().getClass();
             return production;
         }
     }
@@ -48,17 +51,19 @@ public class RequestQueue {
     public synchronized FutureMethodRequest pollNextRequest() {
         FutureMethodRequest consumption = consumptions.peek();
         FutureMethodRequest production = productions.peek();
-        if (consumption.getNanoStamp() < production.getNanoStamp()) {
-            classOfDesignated = consumption.getClass();
+        if (production == null || (consumption != null && consumption.getNanoStamp() < production.getNanoStamp())) {
+            if (consumption != null) {
+                classOfDesignated = consumption.getMethodRequest().getClass();
+            }
             return consumptions.poll();
         } else {
-            classOfDesignated = production.getClass();
+            classOfDesignated = production.getMethodRequest().getClass();
             return productions.poll();
         }
     }
 
     public synchronized FutureMethodRequest pollNextComplementary() {
-        if (classOfDesignated.isInstance(ConsumeRequest.class)) {
+        if (classOfDesignated != null && classOfDesignated.equals(ConsumeRequest.class)) {
             return pollNextProduction();
         } else {
             return pollNextConsumption();
@@ -66,7 +71,7 @@ public class RequestQueue {
     }
 
     public synchronized FutureMethodRequest peekNextComplementary() {
-        if (classOfDesignated.isInstance(ConsumeRequest.class)) {
+        if (classOfDesignated != null && classOfDesignated.equals(ConsumeRequest.class)) {
             return peekNextProduction();
         } else {
             return peekNextConsumption();
