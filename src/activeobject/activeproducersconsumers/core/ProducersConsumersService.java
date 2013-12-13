@@ -1,10 +1,6 @@
-package activeobject.activeproducersconsumers.problemspecific;
+package activeobject.activeproducersconsumers.core;
 
 import activeobject.LongCollector;
-import activeobject.activeproducersconsumers.core.FutureMethodRequest;
-import activeobject.activeproducersconsumers.core.IMethodRequest;
-import activeobject.activeproducersconsumers.core.QueueScheduler;
-import activeobject.activeproducersconsumers.core.Service;
 
 import java.util.LinkedList;
 import java.util.Queue;

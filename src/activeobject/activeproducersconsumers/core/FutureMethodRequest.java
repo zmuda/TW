@@ -7,8 +7,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 public class FutureMethodRequest<T> extends FutureTask<T> {
-
     private final IMethodRequest<T> methodRequest;
+    private final long nanoStamp = System.nanoTime();
 
     public FutureMethodRequest(final IMethodRequest<T> request, final LongCollector activeObjectExecutionTime) {
         super(new Callable<T>() {
@@ -21,6 +21,10 @@ public class FutureMethodRequest<T> extends FutureTask<T> {
             }
         });
         this.methodRequest = request;
+    }
+
+    public long getNanoStamp() {
+        return nanoStamp;
     }
 
     public IMethodRequest<T> getMethodRequest() {

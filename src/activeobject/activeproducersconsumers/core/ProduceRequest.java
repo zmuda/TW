@@ -1,8 +1,7 @@
-package activeobject.activeproducersconsumers.problemspecific;
+package activeobject.activeproducersconsumers.core;
 
 
 import activeobject.TaskDuration;
-import activeobject.activeproducersconsumers.core.IMethodRequest;
 import org.apache.log4j.Logger;
 
 import java.util.Queue;

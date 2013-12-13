@@ -1,6 +1,6 @@
 package activeobject;
 
-import activeobject.activeproducersconsumers.problemspecific.ProducersConsumersService;
+import activeobject.activeproducersconsumers.core.ProducersConsumersService;
 import activeobject.mointoractiveobject.Buffer;
 import activeobject.mointoractiveobject.Consumer;
 import activeobject.mointoractiveobject.IBuffer;
@@ -40,7 +40,6 @@ public class Launcher {
         this.consumerExecutionTimes = consumerExecutionTimes;
         this.activeObjectExecutionTime = activeObjectExecutionTime;
     }
-
 
     private void launchMonitorSolution() throws InterruptedException {
         IBuffer buffer = new Buffer(bufferSize);

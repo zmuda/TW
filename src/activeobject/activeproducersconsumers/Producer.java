@@ -2,7 +2,7 @@ package activeobject.activeproducersconsumers;
 
 import activeobject.LongCollector;
 import activeobject.TaskDuration;
-import activeobject.activeproducersconsumers.problemspecific.ProducersConsumersService;
+import activeobject.activeproducersconsumers.core.ProducersConsumersService;
 
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
