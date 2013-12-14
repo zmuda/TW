@@ -1,0 +1,9 @@
+Entities	main tasks per entity	ActiveObject total time (ms)	Monitor total time (ms)	ActiveObject side tasks mean	Monitor side tasks mean
+1	30	57	141	64.0	30
+6	30	302	163	93.0	30
+11	30	559	292	106.0	30
+16	30	977	386	133.0	30
+21	30	1349	480	143.0	30
+26	30	1621	586	133.0	30
+31	30	1849	706	131.0	30
+36	30	2148	829	128.0	30

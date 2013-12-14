@@ -20,6 +20,9 @@ import java.util.concurrent.*;
 import static activeobject.TaskDurations.probeSize;
 
 public class Main {
+    public static int minEntitiesCount = 1;
+    public static int entitiesCountStep = 9;
+    public static int maxEntitiesCount = 37;
     public static int minProbeSize = 1;
     public static int probeSizeStep = 37;
     public static int maxProbeSize = 190;
@@ -31,30 +34,52 @@ public class Main {
     public static int bufferSize = 30;
 
     public static void main(String[] args) throws InterruptedException, IOException, ExecutionException {
+        changingProbeSize();
+        changingEntitiesCount();
+    }
 
+    public static void changingProbeSize() throws InterruptedException, IOException, ExecutionException {
         StringBuilder builder = new StringBuilder("Entities\tmain tasks per entity\tActiveObject total time (ms)" +
                 "\tMonitor total time (ms)\tActiveObject side tasks mean\tMonitor side tasks mean\n");
-
+        entitiesCount = 10;
         for (probeSize = minProbeSize; probeSize < maxProbeSize; probeSize += probeSizeStep) {
             launch();
-
-            int entities = entitiesCount;
-            int meanMainTasks = probeSize;
-            double meanActiveObjectSideTasks = activeObjectSideTasksCount / 2 / entities;
-            int meanMonitorSideTasks = probeSize;
-
-            builder.append(entities + "\t");
-            builder.append(meanMainTasks + "\t");
-            builder.append(totalActiveObjectTime / 1000 / 1000 + "\t");
-            builder.append(totalMonitorTime / 1000 / 1000 + "\t");
-            builder.append(meanActiveObjectSideTasks + "\t");
-            builder.append(meanMonitorSideTasks + "\n");
+            appendResults(builder);
             System.out.print(builder);
         }
         System.out.print(builder);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(System.currentTimeMillis() + "_log.log"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(System.currentTimeMillis() + "_probeSize.log"));
         writer.write(builder.toString());
         writer.close();
+    }
+
+    public static void changingEntitiesCount() throws InterruptedException, IOException, ExecutionException {
+        probeSize = 30;
+        StringBuilder builder = new StringBuilder("Entities\tmain tasks per entity\tActiveObject total time (ms)" +
+                "\tMonitor total time (ms)\tActiveObject side tasks mean\tMonitor side tasks mean\n");
+        for (entitiesCount = minEntitiesCount; entitiesCount < maxEntitiesCount; entitiesCount += entitiesCountStep) {
+            launch();
+            appendResults(builder);
+            System.out.print(builder);
+        }
+        System.out.print(builder);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(System.currentTimeMillis() + "_entitiesCount.log"));
+        writer.write(builder.toString());
+        writer.close();
+    }
+
+    private static void appendResults(StringBuilder builder) {
+        int entities = entitiesCount;
+        int meanMainTasks = probeSize;
+        double meanActiveObjectSideTasks = activeObjectSideTasksCount / 2 / entities;
+        int meanMonitorSideTasks = probeSize;
+
+        builder.append(entities + "\t");
+        builder.append(meanMainTasks + "\t");
+        builder.append(totalActiveObjectTime / 1000 / 1000 + "\t");
+        builder.append(totalMonitorTime / 1000 / 1000 + "\t");
+        builder.append(meanActiveObjectSideTasks + "\t");
+        builder.append(meanMonitorSideTasks + "\n");
     }
 
     public static void launch() throws InterruptedException, ExecutionException {
