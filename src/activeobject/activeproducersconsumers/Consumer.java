@@ -4,19 +4,16 @@ package activeobject.activeproducersconsumers;
 import activeobject.TaskAbstractionAndStats;
 import activeobject.activeproducersconsumers.core.ProducersConsumersService;
 
-import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 public class Consumer implements Callable<Integer> {
     private ProducersConsumersService<Integer> service;
-    private Random random;
     private int bufferLimit;
 
-    public Consumer(ProducersConsumersService<Integer> service, Random random, int bufferLimit) {
+    public Consumer(ProducersConsumersService<Integer> service, int bufferLimit) {
         this.service = service;
-        this.random = random;
         this.bufferLimit = bufferLimit;
     }
 
@@ -26,7 +23,7 @@ public class Consumer implements Callable<Integer> {
         int sideTasksCount = 0;
         try {
             while (i < TaskAbstractionAndStats.probeSize && !Thread.currentThread().isInterrupted()) {
-                Future<Integer> future = service.consume(1);
+                Future<Integer> future = service.consume();
                 while (!future.isDone()) {
                     TaskAbstractionAndStats.waitForSideTaskToComplete();
                     sideTasksCount++;

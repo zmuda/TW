@@ -12,7 +12,6 @@ public class FutureMethodRequest<T> extends FutureTask<T> {
         super(new Callable<T>() {
             @Override
             public T call() throws Exception {
-                long time = System.currentTimeMillis();
                 T result = request.execute();
                 return result;
             }

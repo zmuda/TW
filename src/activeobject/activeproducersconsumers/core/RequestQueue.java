@@ -6,7 +6,7 @@ import java.util.Queue;
 public class RequestQueue {
     private final Queue<FutureMethodRequest> consumptions = new LinkedList<FutureMethodRequest>();
     private final Queue<FutureMethodRequest> productions = new LinkedList<FutureMethodRequest>();
-    private Class classOfDesignated;
+    private boolean consumerIsFirst = false;
 
     public synchronized void add(FutureMethodRequest req) {
         if (req.getMethodRequest() instanceof ConsumeRequest) {
@@ -38,12 +38,10 @@ public class RequestQueue {
         FutureMethodRequest consumption = consumptions.peek();
         FutureMethodRequest production = productions.peek();
         if (production == null || (consumption != null && consumption.getNanoStamp() < production.getNanoStamp())) {
-            if (consumption != null) {
-                classOfDesignated = consumption.getMethodRequest().getClass();
-            }
+            consumerIsFirst = true;
             return consumption;
         } else {
-            classOfDesignated = production.getMethodRequest().getClass();
+            consumerIsFirst = false;
             return production;
         }
     }
@@ -52,18 +50,16 @@ public class RequestQueue {
         FutureMethodRequest consumption = consumptions.peek();
         FutureMethodRequest production = productions.peek();
         if (production == null || (consumption != null && consumption.getNanoStamp() < production.getNanoStamp())) {
-            if (consumption != null) {
-                classOfDesignated = consumption.getMethodRequest().getClass();
-            }
+            consumerIsFirst = true;
             return consumptions.poll();
         } else {
-            classOfDesignated = production.getMethodRequest().getClass();
+            consumerIsFirst = false;
             return productions.poll();
         }
     }
 
     public synchronized FutureMethodRequest pollNextComplementary() {
-        if (classOfDesignated != null && classOfDesignated.equals(ConsumeRequest.class)) {
+        if (consumerIsFirst) {
             return pollNextProduction();
         } else {
             return pollNextConsumption();
@@ -71,7 +67,7 @@ public class RequestQueue {
     }
 
     public synchronized FutureMethodRequest peekNextComplementary() {
-        if (classOfDesignated != null && classOfDesignated.equals(ConsumeRequest.class)) {
+        if (consumerIsFirst) {
             return peekNextProduction();
         } else {
             return peekNextConsumption();

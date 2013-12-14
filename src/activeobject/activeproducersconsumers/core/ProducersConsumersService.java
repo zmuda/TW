@@ -19,15 +19,15 @@ public class ProducersConsumersService<T> extends Service {
         this.bufferLimit = bufferLimit;
     }
 
-    public Future<T> consume(int howMany) {
-        IMethodRequest<T> request = new ConsumeRequest<T>(buffer, howMany, random);
+    public Future<T> consume() {
+        IMethodRequest<T> request = new ConsumeRequest<T>(buffer);
         FutureMethodRequest<T> methodRequest = new FutureMethodRequest<T>(request);
         scheduler.queueExecution(methodRequest);
         return methodRequest;
     }
 
-    public Future<T> produce(int howMany) {
-        IMethodRequest<T> request = new ProduceRequest<T>(buffer, howMany, instance, bufferLimit, random);
+    public Future<T> produce() {
+        IMethodRequest<T> request = new ProduceRequest<T>(buffer, instance, bufferLimit);
         FutureMethodRequest<T> methodRequest = new FutureMethodRequest<T>(request);
         scheduler.queueExecution(methodRequest);
         return methodRequest;

@@ -5,39 +5,28 @@ import activeobject.TaskAbstractionAndStats;
 import org.apache.log4j.Logger;
 
 import java.util.Queue;
-import java.util.Random;
 
 public class ConsumeRequest<T> implements IMethodRequest<T> {
     private Logger logger = Logger.getLogger("activeobject - losowa ilosc");
     private Queue<T> buffer;
-    private int howMany;
-    private Random random;
 
-    public ConsumeRequest(Queue<T> buffer, int howMany, Random random) {
+    public ConsumeRequest(Queue<T> buffer) {
         this.buffer = buffer;
-        this.howMany = howMany;
-        this.random = random;
     }
 
     @Override
     public boolean guard() {
-        return buffer.size() >= howMany;
+        return buffer.size() > 0;
     }
 
     @Override
     public T execute() throws InterruptedException {
-        logger.info("consumes: " + howMany);
+        logger.info("consumes");
         T ret = null;
-        for (int i = 0; i < howMany; i++) {
-            ret = buffer.poll();
-            TaskAbstractionAndStats.waitForItemToConsume();
-        }
-        logger.info("Consumed: " + howMany);
+        ret = buffer.poll();
+        TaskAbstractionAndStats.waitForItemToConsume();
+        logger.info("Consumed");
         logger.info("\t>>>: " + buffer.size());
-        return ret;//we return last consumed - why not? (null is good as well)
-    }
-
-    @Override
-    public void eventually() {
+        return ret;
     }
 }

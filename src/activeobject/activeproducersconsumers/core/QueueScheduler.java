@@ -1,7 +1,7 @@
 package activeobject.activeproducersconsumers.core;
 
 
-public class QueueScheduler {
+public class QueueScheduler implements Runnable {
     private final RequestQueue queue = new RequestQueue();
     private boolean shutdown = false;
 
@@ -13,24 +13,21 @@ public class QueueScheduler {
         queue.add(task);
     }
 
+    @Override
     public void run() {
-        try {
-
-            while (!shutdown) {
-                FutureMethodRequest request = queue.peekNextRequest();
+        while (!shutdown) {
+            FutureMethodRequest request = queue.peekNextRequest();
+            if (request != null && request.getMethodRequest().guard()) {
+                queue.pollNextRequest();
+                request.run();
+            } else {
+                request = queue.peekNextComplementary();
                 if (request != null && request.getMethodRequest().guard()) {
-                    queue.pollNextRequest();
+                    queue.pollNextComplementary();
                     request.run();
-                } else {
-                    request = queue.peekNextComplementary();
-                    if (request != null && request.getMethodRequest().guard()) {
-                        queue.pollNextComplementary();
-                        request.run();
-                    }//todo any sleep period?
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
     }
 }

@@ -49,8 +49,8 @@ public class Launcher {
         Collection<Callable<Integer>> entities = new LinkedList<Callable<Integer>>();
 
         for (int i = 0; i < this.entities; i++) {
-            entities.add(new activeobject.activeproducersconsumers.Producer(service, random, bufferSize));
-            entities.add(new activeobject.activeproducersconsumers.Consumer(service, random, bufferSize));
+            entities.add(new activeobject.activeproducersconsumers.Producer(service, bufferSize));
+            entities.add(new activeobject.activeproducersconsumers.Consumer(service, bufferSize));
 
         }
         logger.info("Producers: " + this.entities + "\tConsumers: " + this.entities + "\tBuffer for: " + bufferSize);
