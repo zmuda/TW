@@ -10,11 +10,9 @@ import java.util.concurrent.Future;
 
 public class Consumer implements Callable<Integer> {
     private ProducersConsumersService<Integer> service;
-    private int bufferLimit;
 
-    public Consumer(ProducersConsumersService<Integer> service, int bufferLimit) {
+    public Consumer(ProducersConsumersService<Integer> service) {
         this.service = service;
-        this.bufferLimit = bufferLimit;
     }
 
     @Override

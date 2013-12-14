@@ -17,8 +17,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
 
+import static activeobject.TaskDurations.probeSize;
+
 public class Main {
-    public static int probeSize = TaskDurations.probeSize;
+    public static int minProbeSize = 1;
+    public static int probeSizeStep = 37;
+    public static int maxProbeSize = 40;
     public static int entitiesCount = 10;
     public static long totalMonitorTime;
     public static long totalActiveObjectTime;
@@ -30,7 +34,7 @@ public class Main {
 
         StringBuilder builder = new StringBuilder("Entities\tActiveObject\tMonitor\tSideTasksActiveObject\tSideTasksMonitor\tTasksActiveObject\tTasksMonitor\n");
 
-        while (probeSize < 40) {
+        for (probeSize = minProbeSize; probeSize < maxProbeSize; probeSize += probeSizeStep) {
 
             launch();
 
@@ -48,7 +52,6 @@ public class Main {
             builder.append(probeSize + "\t");
             builder.append(probeSize + "\n");
 
-            probeSize += 30;
         }
         System.out.print(builder);
         BufferedWriter writer = new BufferedWriter(new FileWriter(System.currentTimeMillis() + "_log.log"));
@@ -89,8 +92,8 @@ public class Main {
         Collection<Callable<Integer>> callables = new LinkedList<Callable<Integer>>();
 
         for (int i = 0; i < entitiesCount; i++) {
-            callables.add(new activeobject.activeproducersconsumers.Producer(service, bufferSize));
-            callables.add(new activeobject.activeproducersconsumers.Consumer(service, bufferSize));
+            callables.add(new activeobject.activeproducersconsumers.Producer(service));
+            callables.add(new activeobject.activeproducersconsumers.Consumer(service));
 
         }
         //logger.info("Producers: " + this.entities + "\tConsumers: " + this.entities + "\tBuffer for: " + bufferSize);

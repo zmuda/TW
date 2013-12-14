@@ -4,6 +4,8 @@ import java.math.BigInteger;
 
 public class TaskDurations {
     public static int probeSize = 10;
+    public static int sideTaskSize = 12345;
+    public static int mainTaskSize = 12345;
 
     private static void countdown(BigInteger number) {
         while (number.signum() > 0) {
@@ -12,15 +14,15 @@ public class TaskDurations {
     }
 
     public static void waitForSideTaskToComplete() throws InterruptedException {
-        countdown(BigInteger.valueOf(12345));
+        countdown(BigInteger.valueOf(sideTaskSize));
     }
 
     public static void waitForItemToProduce() throws InterruptedException {
-        countdown(BigInteger.valueOf(12345));
+        countdown(BigInteger.valueOf(mainTaskSize));
     }
 
     public static void waitForItemToConsume() throws InterruptedException {
-        countdown(BigInteger.valueOf(12345));
+        countdown(BigInteger.valueOf(mainTaskSize));
     }
 
 
