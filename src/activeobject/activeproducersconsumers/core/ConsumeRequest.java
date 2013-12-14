@@ -1,7 +1,7 @@
 package activeobject.activeproducersconsumers.core;
 
 
-import activeobject.TaskAbstractionAndStats;
+import activeobject.TaskDurations;
 
 import java.util.Queue;
 
@@ -23,7 +23,7 @@ public class ConsumeRequest<T> implements IMethodRequest<T> {
         //logger.info("consumes");
         T ret = null;
         ret = buffer.poll();
-        TaskAbstractionAndStats.waitForItemToConsume();
+        TaskDurations.waitForItemToConsume();
         //logger.info("Consumed");
         //logger.info("\t>>>: " + buffer.size());
         return ret;

@@ -1,7 +1,7 @@
 package activeobject.mointoractiveobject;
 
 
-import activeobject.TaskAbstractionAndStats;
+import activeobject.TaskDurations;
 
 public class Producer implements Runnable {
     private final IBuffer buffer;
@@ -15,12 +15,12 @@ public class Producer implements Runnable {
     public void run() {
         int i = 0;
         try {
-            while (i < TaskAbstractionAndStats.probeSize && !Thread.currentThread().isInterrupted()) {
+            while (i < TaskDurations.probeSize && !Thread.currentThread().isInterrupted()) {
                 int address = buffer.acquireEmpty();
-                TaskAbstractionAndStats.waitForItemToProduce();
+                TaskDurations.waitForItemToProduce();
                 buffer.finalizeFilling(address);
                 i++;
-                TaskAbstractionAndStats.waitForSideTaskToComplete();
+                TaskDurations.waitForSideTaskToComplete();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

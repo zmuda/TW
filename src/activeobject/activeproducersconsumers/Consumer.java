@@ -1,7 +1,7 @@
 package activeobject.activeproducersconsumers;
 
 
-import activeobject.TaskAbstractionAndStats;
+import activeobject.TaskDurations;
 import activeobject.activeproducersconsumers.core.ProducersConsumersService;
 
 import java.util.concurrent.Callable;
@@ -22,16 +22,14 @@ public class Consumer implements Callable<Integer> {
         int i = 0;
         int sideTasksCount = 0;
         try {
-            while (i < TaskAbstractionAndStats.probeSize && !Thread.currentThread().isInterrupted()) {
+            while (i < TaskDurations.probeSize && !Thread.currentThread().isInterrupted()) {
                 Future<Integer> future = service.consume();
                 while (!future.isDone()) {
-                    TaskAbstractionAndStats.waitForSideTaskToComplete();
+                    TaskDurations.waitForSideTaskToComplete();
                     sideTasksCount++;
                 }
                 future.get();
                 i++;
-                TaskAbstractionAndStats.waitForSideTaskToComplete();
-                sideTasksCount++;
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

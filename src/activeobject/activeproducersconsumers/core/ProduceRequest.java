@@ -1,7 +1,7 @@
 package activeobject.activeproducersconsumers.core;
 
 
-import activeobject.TaskAbstractionAndStats;
+import activeobject.TaskDurations;
 import org.apache.log4j.Logger;
 
 import java.util.Queue;
@@ -26,7 +26,7 @@ public class ProduceRequest<T> implements IMethodRequest<T> {
     @Override
     public T execute() throws InterruptedException {
         //logger.info("produces");
-        TaskAbstractionAndStats.waitForItemToProduce();
+        TaskDurations.waitForItemToProduce();
         buffer.add(instance);
         //logger.info("Produced");
         //logger.info("\t>>>: " + buffer.size());
