@@ -22,36 +22,34 @@ import static activeobject.TaskDurations.probeSize;
 public class Main {
     public static int minProbeSize = 1;
     public static int probeSizeStep = 37;
-    public static int maxProbeSize = 40;
+    public static int maxProbeSize = 190;
     public static int entitiesCount = 10;
     public static long totalMonitorTime;
     public static long totalActiveObjectTime;
-    public static long totalSideTasks;
+    public static int activeObjectSideTasksCount;
     public static int workersPoolSize = 4;
     public static int bufferSize = 30;
 
     public static void main(String[] args) throws InterruptedException, IOException, ExecutionException {
 
-        StringBuilder builder = new StringBuilder("Entities\tActiveObject\tMonitor\tSideTasksActiveObject\tSideTasksMonitor\tTasksActiveObject\tTasksMonitor\n");
+        StringBuilder builder = new StringBuilder("Entities\tmain tasks per entity\tActiveObject total time (ms)" +
+                "\tMonitor total time (ms)\tActiveObject side tasks mean\tMonitor side tasks mean\n");
 
         for (probeSize = minProbeSize; probeSize < maxProbeSize; probeSize += probeSizeStep) {
-
             launch();
 
-            double taskTotal = totalActiveObjectTime / 2 / probeSize / entitiesCount / 1000;
-            long sideTasks = totalSideTasks / 2 / entitiesCount;
-            double monitorTaskTotal = totalMonitorTime / 2 / probeSize / entitiesCount / 1000;
-            long monitorSideTasks = probeSize;
+            int entities = entitiesCount;
+            int meanMainTasks = probeSize;
+            double meanActiveObjectSideTasks = activeObjectSideTasksCount / 2 / entities;
+            int meanMonitorSideTasks = probeSize;
 
-
-            builder.append(entitiesCount + "\t");
-            builder.append(taskTotal + "\t");
-            builder.append(monitorTaskTotal + "\t");
-            builder.append(sideTasks + "\t");
-            builder.append(monitorSideTasks + "\t");
-            builder.append(probeSize + "\t");
-            builder.append(probeSize + "\n");
-
+            builder.append(entities + "\t");
+            builder.append(meanMainTasks + "\t");
+            builder.append(totalActiveObjectTime / 1000 / 1000 + "\t");
+            builder.append(totalMonitorTime / 1000 / 1000 + "\t");
+            builder.append(meanActiveObjectSideTasks + "\t");
+            builder.append(meanMonitorSideTasks + "\n");
+            System.out.print(builder);
         }
         System.out.print(builder);
         BufferedWriter writer = new BufferedWriter(new FileWriter(System.currentTimeMillis() + "_log.log"));
@@ -64,7 +62,7 @@ public class Main {
         launchMonitorSolution();
         totalMonitorTime += System.nanoTime();
         totalActiveObjectTime = -System.nanoTime();
-        totalSideTasks = 0;
+        activeObjectSideTasksCount = 0;
         launchActiveObjectSolution();
         totalActiveObjectTime += System.nanoTime();
     }
@@ -102,7 +100,7 @@ public class Main {
         List<Future<Integer>> results = executorService.invokeAll(callables);
 
         for (Future<Integer> i : results) {
-            totalSideTasks += i.get();
+            activeObjectSideTasksCount += i.get();
         }
 
         shutdownGracefully(executorService);
