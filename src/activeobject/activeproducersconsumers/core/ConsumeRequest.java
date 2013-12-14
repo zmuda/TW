@@ -2,12 +2,11 @@ package activeobject.activeproducersconsumers.core;
 
 
 import activeobject.TaskAbstractionAndStats;
-import org.apache.log4j.Logger;
 
 import java.util.Queue;
 
 public class ConsumeRequest<T> implements IMethodRequest<T> {
-    private Logger logger = Logger.getLogger("activeobject - losowa ilosc");
+    //private Logger logger = Logger.getLogger("activeobject - jednoelemoentowo");
     private Queue<T> buffer;
 
     public ConsumeRequest(Queue<T> buffer) {
@@ -21,12 +20,12 @@ public class ConsumeRequest<T> implements IMethodRequest<T> {
 
     @Override
     public T execute() throws InterruptedException {
-        logger.info("consumes");
+        //logger.info("consumes");
         T ret = null;
         ret = buffer.poll();
         TaskAbstractionAndStats.waitForItemToConsume();
-        logger.info("Consumed");
-        logger.info("\t>>>: " + buffer.size());
+        //logger.info("Consumed");
+        //logger.info("\t>>>: " + buffer.size());
         return ret;
     }
 }

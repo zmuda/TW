@@ -6,7 +6,6 @@ import activeobject.mointoractiveobject.Consumer;
 import activeobject.mointoractiveobject.IBuffer;
 import activeobject.mointoractiveobject.Producer;
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -39,7 +38,7 @@ public class Launcher {
     }
 
     private void launchActiveObjectSolution() throws InterruptedException, ExecutionException {
-        Logger logger = Logger.getLogger("activeobject - losowa ilosc");
+        //Logger logger = Logger.getLogger("activeobject - losowa ilosc");
         Random random = new Random(System.currentTimeMillis());
 
         BasicConfigurator.configure();
@@ -53,7 +52,7 @@ public class Launcher {
             entities.add(new activeobject.activeproducersconsumers.Consumer(service, bufferSize));
 
         }
-        logger.info("Producers: " + this.entities + "\tConsumers: " + this.entities + "\tBuffer for: " + bufferSize);
+        //logger.info("Producers: " + this.entities + "\tConsumers: " + this.entities + "\tBuffer for: " + bufferSize);
         ExecutorService activeObjectExecutor = Executors.newSingleThreadExecutor();
         activeObjectExecutor.submit(service);
         List<Future<Integer>> results = executorService.invokeAll(entities);

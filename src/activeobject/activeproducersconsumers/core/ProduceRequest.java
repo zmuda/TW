@@ -25,11 +25,11 @@ public class ProduceRequest<T> implements IMethodRequest<T> {
 
     @Override
     public T execute() throws InterruptedException {
-        logger.info("produces");
+        //logger.info("produces");
         TaskAbstractionAndStats.waitForItemToProduce();
         buffer.add(instance);
-        logger.info("Produced");
-        logger.info("\t>>>: " + buffer.size());
+        //logger.info("Produced");
+        //logger.info("\t>>>: " + buffer.size());
         return instance;
     }
 }

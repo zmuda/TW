@@ -1,7 +1,6 @@
 package activeobject.mointoractiveobject;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -10,7 +9,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Buffer implements IBuffer {
-    private Logger logger = Logger.getLogger("mointoractiveobject");
+    //private Logger logger = Logger.getLogger("mointoractiveobject");
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition elementsAvailable = lock.newCondition();
     private final Condition spaceAvailable = lock.newCondition();
@@ -42,7 +41,7 @@ public class Buffer implements IBuffer {
             }
             tmp = emptyAddresses.poll();
             states.set(tmp, ElementState.BEING_FILLED);
-            logger.info(getStateString());
+            //logger.info(getStateString());
         } finally {
             lock.unlock();
         }
@@ -59,7 +58,7 @@ public class Buffer implements IBuffer {
             fullAddresses.add(address);
             states.set(address, ElementState.FULL);
             elementsAvailable.signal();
-            logger.info(getStateString());
+            //logger.info(getStateString());
         } finally {
             lock.unlock();
         }
@@ -75,7 +74,7 @@ public class Buffer implements IBuffer {
             }
             tmp = fullAddresses.poll();
             states.set(tmp, ElementState.BEING_EMPTIED);
-            logger.info(getStateString());
+            //logger.info(getStateString());
         } finally {
             lock.unlock();
         }
@@ -92,7 +91,7 @@ public class Buffer implements IBuffer {
             emptyAddresses.add(address);
             states.set(address, ElementState.EMPTY);
             spaceAvailable.signal();
-            logger.info(getStateString());
+            //logger.info(getStateString());
         } finally {
             lock.unlock();
         }
