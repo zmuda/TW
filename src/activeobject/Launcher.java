@@ -15,30 +15,26 @@ import java.util.Random;
 import java.util.concurrent.*;
 
 public class Launcher {
-    private final int producers;
-    private final int consumers;
+    private final int entities;
     private final int bufferSize;
 
-    public Launcher(int producers, int consumers, int bufferSize) {
-        this.producers = producers;
-        this.consumers = consumers;
+    public Launcher(int entities, int bufferSize) {
+        this.entities = entities;
         this.bufferSize = bufferSize;
     }
 
     private void launchMonitorSolution() throws InterruptedException {
         IBuffer buffer = new Buffer(bufferSize);
-        ExecutorService service = Executors.newFixedThreadPool(producers + consumers);
+        ExecutorService service = Executors.newFixedThreadPool(TaskAbstractionAndStats.workersPoolSize);
 
-        for (int i = 0; i < producers; i++) {
+        for (int i = 0; i < entities; i++) {
             service.submit(new Producer(buffer));
-        }
-        for (int i = 0; i < consumers; i++) {
             service.submit(new Consumer(buffer));
         }
 
         service.shutdown();
         while (!service.isTerminated()) {
-            service.awaitTermination(1000, TimeUnit.MILLISECONDS);
+            service.awaitTermination(10, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -48,17 +44,16 @@ public class Launcher {
 
         BasicConfigurator.configure();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(producers + consumers);
+        ExecutorService executorService = Executors.newFixedThreadPool(TaskAbstractionAndStats.workersPoolSize);
         ProducersConsumersService<Integer> service = new ProducersConsumersService<Integer>(bufferSize, 2);
         Collection<Callable<Integer>> entities = new LinkedList<Callable<Integer>>();
 
-        for (int i = 0; i < producers; i++) {
+        for (int i = 0; i < this.entities; i++) {
             entities.add(new activeobject.activeproducersconsumers.Producer(service, random, bufferSize));
-        }
-        for (int i = 0; i < consumers; i++) {
             entities.add(new activeobject.activeproducersconsumers.Consumer(service, random, bufferSize));
+
         }
-        logger.info("Producers: " + producers + "\tConsumers: " + consumers + "\tBuffer for: " + bufferSize);
+        logger.info("Producers: " + this.entities + "\tConsumers: " + this.entities + "\tBuffer for: " + bufferSize);
         ExecutorService activeObjectExecutor = Executors.newSingleThreadExecutor();
         activeObjectExecutor.submit(service);
         List<Future<Integer>> results = executorService.invokeAll(entities);
@@ -69,7 +64,7 @@ public class Launcher {
 
         executorService.shutdown();
         while (!executorService.isTerminated()) {
-            executorService.awaitTermination(1000, TimeUnit.MILLISECONDS);
+            executorService.awaitTermination(10, TimeUnit.MILLISECONDS);
         }
 
         service.shutdown();
@@ -80,12 +75,12 @@ public class Launcher {
     }
 
     public void launch() throws InterruptedException, ExecutionException {
-        TaskAbstractionAndStats.totalMonitorTime = -System.currentTimeMillis();
+        TaskAbstractionAndStats.totalMonitorTime = -System.nanoTime();
         launchMonitorSolution();
-        TaskAbstractionAndStats.totalMonitorTime += System.currentTimeMillis();
-        TaskAbstractionAndStats.totalActiveObjectTime = -System.currentTimeMillis();
+        TaskAbstractionAndStats.totalMonitorTime += System.nanoTime();
+        TaskAbstractionAndStats.totalActiveObjectTime = -System.nanoTime();
         TaskAbstractionAndStats.totalSideTasks = 0;
         launchActiveObjectSolution();
-        TaskAbstractionAndStats.totalActiveObjectTime += System.currentTimeMillis();
+        TaskAbstractionAndStats.totalActiveObjectTime += System.nanoTime();
     }
 }

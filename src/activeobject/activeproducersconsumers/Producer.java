@@ -33,6 +33,8 @@ public class Producer implements Callable<Integer> {
                 }
                 future.get();
                 i++;
+                TaskAbstractionAndStats.waitForSideTaskToComplete();
+                sideTasksCount++;
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
