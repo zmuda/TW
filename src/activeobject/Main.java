@@ -21,21 +21,22 @@ import static activeobject.TaskDurations.probeSize;
 
 public class Main {
     public static int minEntitiesCount = 1;
-    public static int entitiesCountStep = 9;
-    public static int maxEntitiesCount = 37;
+    public static int entitiesCountStep = 7;
+    public static int maxEntitiesCount = 53;
     public static int minProbeSize = 1;
-    public static int probeSizeStep = 37;
-    public static int maxProbeSize = 190;
+    public static int probeSizeStep = 17;
+    public static int maxProbeSize = 140;
     public static int entitiesCount = 10;
     public static long totalMonitorTime;
     public static long totalActiveObjectTime;
     public static int activeObjectSideTasksCount;
-    public static int workersPoolSize = 4;
-    public static int bufferSize = 30;
+    public static int workersPoolSize = 400;
+    public static int bufferSize = 300;
 
     public static void main(String[] args) throws InterruptedException, IOException, ExecutionException {
         changingProbeSize();
         changingEntitiesCount();
+        balanced();
     }
 
     public static void changingProbeSize() throws InterruptedException, IOException, ExecutionException {
@@ -54,7 +55,7 @@ public class Main {
     }
 
     public static void changingEntitiesCount() throws InterruptedException, IOException, ExecutionException {
-        probeSize = 30;
+        probeSize = 3;
         StringBuilder builder = new StringBuilder("Entities\tmain tasks per entity\tActiveObject total time (ms)" +
                 "\tMonitor total time (ms)\tActiveObject side tasks mean\tMonitor side tasks mean\n");
         for (entitiesCount = minEntitiesCount; entitiesCount < maxEntitiesCount; entitiesCount += entitiesCountStep) {
@@ -64,6 +65,28 @@ public class Main {
         }
         System.out.print(builder);
         BufferedWriter writer = new BufferedWriter(new FileWriter(System.currentTimeMillis() + "_entitiesCount.log"));
+        writer.write(builder.toString());
+        writer.close();
+    }
+
+    public static void balanced() throws InterruptedException, IOException, ExecutionException {
+        StringBuilder builder = new StringBuilder("Entities\tmain tasks per entity\tActiveObject total time (ms)" +
+                "\tMonitor total time (ms)\tActiveObject side tasks mean\tMonitor side tasks mean\n");
+        entitiesCount = 2;
+        probeSize = 256;
+        while (true) {
+            //for (entitiesCount = minEntitiesCount; entitiesCount < maxEntitiesCount; entitiesCount += entitiesCountStep) {
+            launch();
+            appendResults(builder);
+            System.out.print(builder);
+            entitiesCount *= 2;
+            probeSize /= 2;
+            if (probeSize <= 16) {
+                break;
+            }
+        }
+        System.out.print(builder);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(System.currentTimeMillis() + "_balance.log"));
         writer.write(builder.toString());
         writer.close();
     }
