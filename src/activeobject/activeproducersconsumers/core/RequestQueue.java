@@ -16,6 +16,7 @@ public class RequestQueue {
         } else {
             throw new IllegalArgumentException();
         }
+        this.notify();
     }
 
     public synchronized FutureMethodRequest peekNextConsumption() {
@@ -46,7 +47,10 @@ public class RequestQueue {
         }
     }
 
-    public synchronized FutureMethodRequest pollNextRequest() {
+    public synchronized FutureMethodRequest pollNextRequest() throws InterruptedException {
+        while (consumptions.isEmpty() && productions.isEmpty()) {
+            this.wait();
+        }
         FutureMethodRequest consumption = consumptions.peek();
         FutureMethodRequest production = productions.peek();
         if (production == null || (consumption != null && consumption.getNanoStamp() < production.getNanoStamp())) {

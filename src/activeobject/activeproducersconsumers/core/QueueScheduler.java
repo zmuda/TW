@@ -15,18 +15,23 @@ public class QueueScheduler implements Runnable {
 
     @Override
     public void run() {
-        while (!shutdown) {
-            FutureMethodRequest request = queue.peekNextRequest();
-            if (request != null && request.getMethodRequest().guard()) {
-                queue.pollNextRequest();
-                request.run();
-            } else {
-                request = queue.peekNextComplementary();
+        try {
+            while (!shutdown) {
+                FutureMethodRequest request = queue.peekNextRequest();
                 if (request != null && request.getMethodRequest().guard()) {
-                    queue.pollNextComplementary();
+                    queue.pollNextRequest();
                     request.run();
+                } else {
+                    request = queue.peekNextComplementary();
+                    if (request != null && request.getMethodRequest().guard()) {
+                        queue.pollNextComplementary();
+                        request.run();
+                    }
                 }
             }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
 
     }
