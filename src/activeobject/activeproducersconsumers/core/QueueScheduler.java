@@ -19,7 +19,7 @@ public class QueueScheduler implements Runnable {
             while (!shutdown) {
                 FutureMethodRequest request = queue.peekNextRequest();
                 if (request != null && request.getMethodRequest().guard()) {
-                    queue.pollNextRequest();
+                    queue.pollNextRequestWithWait();
                     request.run();
                 } else {
                     request = queue.peekNextComplementary();

@@ -47,7 +47,7 @@ public class RequestQueue {
         }
     }
 
-    public synchronized FutureMethodRequest pollNextRequest() throws InterruptedException {
+    public synchronized FutureMethodRequest pollNextRequestWithWait() throws InterruptedException {
         while (consumptions.isEmpty() && productions.isEmpty()) {
             this.wait();
         }
